@@ -197,6 +197,34 @@ textarea.fc{resize:vertical;min-height:72px}
 .period-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
 .period-tab.active{background:var(--white);color:var(--green);box-shadow:var(--shadow-sm)}
 
+/* SALES TABS */
+.sales-tab-nav{display:flex;border-top:2px solid var(--green-border);margin-top:16px}
+.sales-tab-btn{flex:1;padding:13px 12px;font-size:14px;font-weight:600;color:var(--gray-700);background:var(--white);border:none;cursor:pointer;transition:.15s;border-top:3px solid transparent;margin-top:-2px;display:flex;align-items:center;justify-content:center;gap:6px}
+.sales-tab-btn.active{color:var(--green);border-top-color:var(--green);background:var(--green-hover)}
+.sales-tab-btn:hover:not(.active){background:var(--gray-50)}
+.sales-tab-count{background:var(--orange);color:#fff;border-radius:20px;padding:1px 7px;font-size:11px}
+.sales-tab-btn.active .sales-tab-count{background:var(--green)}
+
+/* EDIT TOOLBAR */
+.edit-toolbar{background:var(--green-hover);border:1px solid var(--green-border);border-radius:var(--radius);padding:10px 16px;margin:0 0 12px;align-items:center;gap:10px;flex-wrap:wrap;display:none}
+.edit-toolbar.visible{display:flex}
+
+/* PENDING ORDER CARD */
+.order-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);padding:14px 16px;margin-bottom:10px;position:relative;transition:.15s}
+.order-card:hover{border-color:var(--green-light);box-shadow:var(--shadow-sm)}
+.order-card.selected{border-color:var(--green);background:var(--green-hover)}
+.order-card-check{position:absolute;top:12px;left:12px;width:18px;height:18px;cursor:pointer;display:none}
+.edit-mode .order-card-check{display:block}
+.edit-mode .order-card{padding-left:38px}
+.order-card-row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-start}
+.order-field{font-size:13px;color:var(--gray-700)}
+.order-field strong{color:var(--gray-900)}
+.order-field.highlight{color:var(--green);font-weight:700}
+.order-shipping-tag{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border-radius:var(--radius);padding:3px 10px;font-size:12px;font-weight:600}
+
+/* DASHBOARD PERIOD */
+.dash-period-wrap{margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
 /* EMPTY */
 .empty{text-align:center;padding:48px 20px;color:var(--gray-500)}
 .empty i{font-size:40px;margin-bottom:12px;display:block;opacity:.4}
@@ -292,7 +320,7 @@ textarea.fc{resize:vertical;min-height:72px}
     <nav class="sidebar-nav">
       <div class="nav-section">ຫຼັກ</div>
       <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><i class="fa fa-chart-pie"></i> Dashboard</div>
-      <div class="nav-item" data-page="sales" onclick="navigate('sales')"><i class="fa fa-shopping-cart"></i> ຍອດຂາຍ</div>
+      <div class="nav-item" data-page="sales" onclick="navigate('sales')"><i class="fa fa-shopping-cart"></i> ຈັດການຍອດຂາຍ</div>
       <div class="nav-item" data-page="finance" onclick="navigate('finance')"><i class="fa fa-wallet"></i> ການເງິນ</div>
       <div class="nav-section">ຂໍ້ມູນ</div>
       <div class="nav-item" data-page="products" onclick="navigate('products')"><i class="fa fa-box"></i> ສິນຄ້າ</div>
@@ -329,6 +357,15 @@ textarea.fc{resize:vertical;min-height:72px}
 
       <!-- DASHBOARD -->
       <div id="page-dashboard" class="page active">
+        <div class="dash-period-wrap">
+          <span style="font-size:13px;font-weight:600;color:var(--gray-700)">ສະຖິຕິ:</span>
+          <div class="period-tabs" id="dash-period">
+            <button class="period-tab" data-p="7day" onclick="setDashPeriod('7day')">7 ວັນ</button>
+            <button class="period-tab" data-p="month" onclick="setDashPeriod('month')">ເດືອນ</button>
+            <button class="period-tab" data-p="year" onclick="setDashPeriod('year')">ປີ</button>
+            <button class="period-tab active" data-p="all" onclick="setDashPeriod('all')">ທັງໝົດ</button>
+          </div>
+        </div>
         <div class="stat-grid" id="dash-stats"></div>
         <div class="chart-grid">
           <div class="chart-panel"><div class="chart-title">ຍອດຂາຍ 7 ວັນ</div><div class="chart-wrap"><canvas id="chart-sales7"></canvas></div></div>
@@ -342,16 +379,53 @@ textarea.fc{resize:vertical;min-height:72px}
 
       <!-- SALES -->
       <div id="page-sales" class="page">
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">ລາຍການຂາຍ</span>
-            <div class="filter-bar">
-              <div class="search-wrap"><i class="fa fa-search"></i><input class="search-input" id="sales-search" placeholder="ຄົ້ນຫາ..." oninput="renderSalesTable()"></div>
-              <select class="fc" style="width:130px" id="sales-sf" onchange="renderSalesTable()"><option value="">ທຸກສະຖານະ</option><option>ສຳເລັດ</option><option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ຍົກເລີກ</option></select>
-              <button class="btn btn-green" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
+
+        <!-- TAB: ອໍເດີຕ້ອງສົ່ງ -->
+        <div id="sales-panel-pending">
+          <div class="panel" style="margin-bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+            <div class="panel-header">
+              <span class="panel-title"><i class="fa fa-box-open" style="color:var(--orange)"></i> ອໍເດີຕ້ອງສົ່ງ</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="pending-count-label" style="font-size:12px;color:var(--gray-500)"></span>
+                <button id="btn-pending-edit" class="btn btn-outline btn-sm" onclick="togglePendingEditMode()"><i class="fa fa-check-square"></i> ແກ້ໄຂ</button>
+              </div>
+            </div>
+            <!-- Edit Toolbar -->
+            <div class="edit-toolbar" id="pending-edit-toolbar">
+              <button class="btn btn-outline btn-sm" onclick="selectAllPending()"><i class="fa fa-check-double"></i> ເລືອກທັງໝົດ</button>
+              <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="markShippedAndPrint()"><i class="fa fa-truck"></i> ຈັດສົ່ງແລ້ວ (Print)</button>
+              <span id="pending-selected-count" style="font-size:12px;color:var(--gray-700);margin-left:4px"></span>
+            </div>
+            <div class="panel-body" id="pending-orders-list" style="padding:12px 16px">
+              <div class="empty"><i class="fa fa-inbox"></i><p>ກຳລັງໂຫຼດ...</p></div>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ລູກຄ້າ</th><th>ຈຳ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຂົນສົ່ງ</th><th>ຈັດການ</th></tr></thead><tbody id="sales-tbody"></tbody></table></div>
+        </div>
+
+        <!-- TAB: ຈັດການຍອດ -->
+        <div id="sales-panel-manage" style="display:none">
+          <div class="panel" style="margin-bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+            <div class="panel-header">
+              <span class="panel-title"><i class="fa fa-list-alt" style="color:var(--green)"></i> ຈັດການຍອດ</span>
+              <div class="filter-bar">
+                <div class="search-wrap"><i class="fa fa-search"></i><input class="search-input" id="sales-search" placeholder="ຄົ້ນຫາ..." oninput="renderSalesTable()"></div>
+                <select class="fc" style="width:130px" id="sales-sf" onchange="renderSalesTable()"><option value="">ທຸກສະຖານະ</option><option>ສຳເລັດ</option><option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ຍົກເລີກ</option></select>
+                <button class="btn btn-green" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
+              </div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ລູກຄ້າ</th><th>ຈຳ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຂົນສົ່ງ</th><th>ຈັດການ</th></tr></thead><tbody id="sales-tbody"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- BOTTOM TABS -->
+        <div class="sales-tab-nav">
+          <button class="sales-tab-btn active" id="sales-tab-pending" onclick="setSalesTab('pending')">
+            <i class="fa fa-box"></i> ອໍເດີຕ້ອງສົ່ງ
+            <span class="sales-tab-count" id="tab-pending-badge">0</span>
+          </button>
+          <button class="sales-tab-btn" id="sales-tab-manage" onclick="setSalesTab('manage')">
+            <i class="fa fa-table"></i> ຈັດການຍອດ
+          </button>
         </div>
       </div>
 
@@ -465,7 +539,6 @@ textarea.fc{resize:vertical;min-height:72px}
           <div><label>ຊື່ລູກຄ້າ</label><input class="fc" type="text" id="s-cname" placeholder="ຊື່ລູກຄ້າ"></div>
           <div><label>ເບີໂທ</label><input class="fc" type="text" id="s-cphone" placeholder="020xxxxxxxx"></div>
         </div>
-        <div><label>ແຫຼ່ງທີ່ມາ</label><select class="fc" id="s-csource"><option value="">-- ເລືອກ --</option><option>ໂຄສະນາ Facebook</option><option>ໂຄສະນາ TikTok</option><option>ລູກຄ້າເກົ່າ</option><option>ແນະນຳ</option><option>ອື່ນໆ</option></select></div>
       </div>
       <div class="form-section">
         <div class="form-section-title">🚚 ຂໍ້ມູນຈັດສົ່ງ</div>
@@ -711,6 +784,7 @@ const LAO_GEO = {
 let S = {
   user:null, profile:null, company:null, role:null, page:'dashboard',
   finPeriod:'month', adsPeriod:'7day', repPeriod:'7day',
+  salesTab:'pending', dashPeriod:'all', pendingEditMode:false,
   db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}
 };
 let charts = {};
@@ -861,7 +935,7 @@ function setupRealtime(){
 // ══════════════════════════════════════
 //  NAVIGATE
 // ══════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',sales:'ຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ','co-shipping':'ບໍລິສັດຂົນສົ່ງ'};
+const PAGE_TITLES={dashboard:'Dashboard',sales:'ຈັດການຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ','co-shipping':'ບໍລິສັດຂົນສົ່ງ'};
 function toggleSettings(){
   const sub=document.getElementById('settings-submenu');
   const arr=document.getElementById('settings-arrow');
@@ -892,7 +966,7 @@ function navigate(page){
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 function renderPage(p){
   if(p==='dashboard') renderDash();
-  else if(p==='sales') renderSalesTable();
+  else if(p==='sales') renderSalesPage();
   else if(p==='finance') renderFin();
   else if(p==='products') renderProductsTable();
   else if(p==='ads') renderAds();
@@ -904,12 +978,25 @@ function renderPage(p){
 // ══════════════════════════════════════
 //  DASHBOARD
 // ══════════════════════════════════════
+function setDashPeriod(p){
+  S.dashPeriod=p;
+  document.querySelectorAll('#dash-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  renderDash();
+}
+function getDashData(){
+  const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
+  let sales=S.db.sales, fin=S.db.finance;
+  if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);sales=sales.filter(s=>new Date(s.date)>=d7);fin=fin.filter(f=>new Date(f.date)>=d7);}
+  else if(S.dashPeriod==='month'){sales=sales.filter(s=>s.date.startsWith(ym));fin=fin.filter(f=>f.date.startsWith(ym));}
+  else if(S.dashPeriod==='year'){sales=sales.filter(s=>s.date.startsWith(yr));fin=fin.filter(f=>f.date.startsWith(yr));}
+  return {sales,fin};
+}
 function renderDash(){
-  const sales=S.db.sales, fin=S.db.finance;
+  const {sales,fin}=getDashData();
   const rev=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
   const prof=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
   const exp=fin.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
-  const pending=sales.filter(s=>s.status==='ລໍຖ້າ'||s.status==='ຈັດສົ່ງ').length;
+  const pending=S.db.sales.filter(s=>s.status==='ລໍຖ້າ'||s.status==='ຈັດສົ່ງ').length;
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ຍອດຂາຍ (ສຳເລັດ)</div><div class="stat-value">${fmt(rev)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລລວມ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)}</div><div class="stat-sub">₭</div></div>
@@ -918,24 +1005,170 @@ function renderDash(){
   const tbody=document.getElementById('dash-recent');
   const rec=sales.slice(0,10);
   tbody.innerHTML=rec.length?rec.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${esc(s.product_name||'-')}</td><td>${esc(s.customer_name||'-')}</td><td>${s.qty}</td><td style="font-weight:700">${fmt(s.qty*s.price-(s.discount||0))} ₭</td><td>${badge(s.status)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-500)">ຍັງບໍ່ມີຂໍ້ມູນ</td></tr>';
-  draw7Days(); drawChannel();
+  draw7Days(sales); drawChannel(sales);
 }
-function draw7Days(){
+function draw7Days(filteredSales){
   const ctx=document.getElementById('chart-sales7'); if(!ctx) return;
+  const src=filteredSales||S.db.sales;
   const L=[],D=[];
-  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().slice(0,10);L.push(ds.slice(5));D.push(S.db.sales.filter(s=>s.date===ds&&s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0));}
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().slice(0,10);L.push(ds.slice(5));D.push(src.filter(s=>s.date===ds&&s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0));}
   dc('sales7'); charts['sales7']=new Chart(ctx,{type:'bar',data:{labels:L,datasets:[{label:'ຍອດ',data:D,backgroundColor:'rgba(76,175,80,.7)',borderColor:'#2e7d32',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v)}}}}});
 }
-function drawChannel(){
+function drawChannel(filteredSales){
   const ctx=document.getElementById('chart-channel'); if(!ctx) return;
+  const src=filteredSales||S.db.sales;
   const ch={};
-  S.db.sales.filter(s=>s.status==='ສຳເລັດ').forEach(s=>{const c=s.channel||'ອື່ນໆ';ch[c]=(ch[c]||0)+(s.qty*s.price-(s.discount||0));});
+  src.filter(s=>s.status==='ສຳເລັດ').forEach(s=>{const c=s.channel||'ອື່ນໆ';ch[c]=(ch[c]||0)+(s.qty*s.price-(s.discount||0));});
   dc('channel'); charts['channel']=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(ch),datasets:[{data:Object.values(ch),backgroundColor:['#4caf50','#2196f3','#ff9800','#9c27b0','#f44336','#009688','#ffd600']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
 }
 
 // ══════════════════════════════════════
 //  SALES
 // ══════════════════════════════════════
+function setSalesTab(tab){
+  S.salesTab=tab;
+  S.pendingEditMode=false;
+  document.getElementById('sales-panel-pending').style.display=tab==='pending'?'block':'none';
+  document.getElementById('sales-panel-manage').style.display=tab==='manage'?'block':'none';
+  document.getElementById('sales-tab-pending').classList.toggle('active',tab==='pending');
+  document.getElementById('sales-tab-manage').classList.toggle('active',tab==='manage');
+  if(tab==='pending') renderPendingOrders();
+  else renderSalesTable();
+}
+function renderSalesPage(){
+  // Update pending badge count
+  const cnt=S.db.sales.filter(s=>s.status==='ລໍຖ້າ').length;
+  const badge=document.getElementById('tab-pending-badge');
+  if(badge) badge.textContent=cnt;
+  setSalesTab(S.salesTab);
+}
+function renderPendingOrders(){
+  // Exit edit mode UI reset
+  const toolbar=document.getElementById('pending-edit-toolbar');
+  if(toolbar) toolbar.classList.toggle('visible',S.pendingEditMode);
+  const btnEdit=document.getElementById('btn-pending-edit');
+  if(btnEdit) btnEdit.style.background=S.pendingEditMode?'var(--green)':''  , btnEdit.style.color=S.pendingEditMode?'#fff':'';
+
+  const data=S.db.sales.filter(s=>s.status==='ລໍຖ້າ');
+  const countEl=document.getElementById('pending-count-label');
+  if(countEl) countEl.textContent=data.length?`${data.length} ລາຍການ`:'';
+  const container=document.getElementById('pending-orders-list');
+  if(!container) return;
+  if(!data.length){
+    container.innerHTML='<div class="empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p>ບໍ່ມີອໍເດີຕ້ອງສົ່ງ 🎉</p></div>';
+    return;
+  }
+  container.className='panel-body'+(S.pendingEditMode?' edit-mode':'');
+  container.style.padding='12px 16px';
+  container.innerHTML=data.map(s=>{
+    const tot=s.qty*s.price-(s.discount||0);
+    // Find shipping info from branches
+    const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
+    const br=sc?S.db.branches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
+    const prov=br?br.province:(s.province||'');
+    const dist=br?br.district:(s.district||'');
+    const branchName=s.branch||'';
+    const shipLine=[prov,dist,branchName].filter(Boolean);
+    return `<div class="order-card" id="ocard-${s.id}">
+      <input type="checkbox" class="order-card-check" id="chk-${s.id}" onchange="updatePendingCount()">
+      <div class="order-card-row">
+        <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:11px"></i> ${fmtDate(s.date)}</div>
+        <div class="order-field" style="flex:1;min-width:120px"><strong>${esc(s.customer_name||'—')}</strong></div>
+        <div class="order-field">${s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500)"></i> ${esc(s.customer_phone)}`:''}</div>
+        <div class="order-field highlight" style="flex:1;min-width:140px"><i class="fa fa-box" style="font-size:11px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
+        <div class="order-field"><strong style="color:var(--green-dark)">${fmt(tot)} ₭</strong></div>
+      </div>
+      ${shipLine.length?`<div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        ${s.shipping_company?`<span class="order-shipping-tag"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
+        ${shipLine.length?`<span style="font-size:12px;color:var(--gray-700)"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:11px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
+      </div>`:''}
+    </div>`;
+  }).join('');
+  updatePendingCount();
+}
+function togglePendingEditMode(){
+  S.pendingEditMode=!S.pendingEditMode;
+  renderPendingOrders();
+}
+function updatePendingCount(){
+  const checked=document.querySelectorAll('.order-card-check:checked').length;
+  const el=document.getElementById('pending-selected-count');
+  if(el) el.textContent=checked?`ເລືອກ ${checked} ລາຍການ`:'';
+  // highlight selected cards
+  document.querySelectorAll('.order-card').forEach(card=>{
+    const chk=card.querySelector('.order-card-check');
+    card.classList.toggle('selected',chk&&chk.checked);
+  });
+}
+function selectAllPending(){
+  const checks=document.querySelectorAll('.order-card-check');
+  const allChecked=[...checks].every(c=>c.checked);
+  checks.forEach(c=>c.checked=!allChecked);
+  updatePendingCount();
+}
+async function markShippedAndPrint(){
+  const checked=[...document.querySelectorAll('.order-card-check:checked')];
+  if(!checked.length){toast('ກະລຸນາເລືອກລາຍການ','error');return;}
+  const ids=checked.map(c=>c.id.replace('chk-',''));
+  const ordersToShip=S.db.sales.filter(s=>ids.includes(s.id));
+  // Update Supabase
+  const{error}=await sb.from('sales').update({status:'ຈັດສົ່ງ'}).in('id',ids);
+  if(error){toast(error.message,'error');return;}
+  S.db.sales=S.db.sales.map(s=>ids.includes(s.id)?{...s,status:'ຈັດສົ່ງ'}:s);
+  toast(`ອັບເດດ ${ids.length} ລາຍການ → ຈັດສົ່ງ ✓`,'success');
+  // Print
+  printShippingOrders(ordersToShip);
+  S.pendingEditMode=false;
+  renderPendingOrders();
+  // Update badge
+  const cnt=S.db.sales.filter(s=>s.status==='ລໍຖ້າ').length;
+  const badge=document.getElementById('tab-pending-badge');
+  if(badge) badge.textContent=cnt;
+}
+function printShippingOrders(orders){
+  const co=S.company.name||'';
+  const rows=orders.map((s,i)=>{
+    const tot=s.qty*s.price-(s.discount||0);
+    const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
+    const br=sc?S.db.branches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
+    const prov=br?br.province:(s.province||'');
+    const dist=br?br.district:(s.district||'');
+    const addr=[prov,dist,s.branch].filter(Boolean).join(' › ');
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${fmtDate(s.date)}</td>
+      <td><strong>${s.customer_name||'—'}</strong><br><small>${s.customer_phone||''}</small></td>
+      <td>${s.product_name||'-'} × ${s.qty}</td>
+      <td style="text-align:right;font-weight:bold">${fmt(tot)} ₭</td>
+      <td>${s.shipping_company||'-'}</td>
+      <td>${addr||'-'}</td>
+    </tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html lang="lo"><head><meta charset="UTF-8">
+  <title>ລາຍການຈັດສົ່ງ - ${co}</title>
+  <style>
+    body{font-family:'Noto Sans Lao',sans-serif;font-size:13px;padding:20px;color:#212121}
+    h2{font-size:16px;margin-bottom:4px}
+    p{color:#666;font-size:12px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse}
+    th{background:#e8f5e9;color:#2e7d32;padding:8px;text-align:left;font-size:12px}
+    td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+    tr:hover{background:#fafafa}
+    @media print{body{padding:8px}}
+  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao&display=swap">
+  </head><body>
+  <h2>📦 ລາຍການຈັດສົ່ງ — ${co}</h2>
+  <p>ວັນທີ: ${fmtDate(today())} | ຈຳນວນ: ${orders.length} ລາຍການ</p>
+  <table>
+    <thead><tr><th>#</th><th>ວັນທີ</th><th>ລູກຄ້າ</th><th>ສິນຄ້າ</th><th>ຍອດ</th><th>ຂົນສົ່ງ</th><th>ທີ່ຢູ່</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+  const w=window.open('','_blank','width=900,height=650');
+  if(w){w.document.write(html);w.document.close();}
+}
 function renderSalesTable(){
   const q=v('sales-search').toLowerCase(), sf=v('sales-sf');
   const data=S.db.sales.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf));
@@ -955,7 +1188,7 @@ function renderSalesTable(){
 }
 function openSaleModal(){
   sv('sale-id',''); document.getElementById('sale-modal-title').textContent='ເພີ່ມການຂາຍໃໝ່';
-  sv('s-date',today()); sv('s-cname',''); sv('s-cphone',''); sv('s-csource',''); sv('s-ship','');
+  sv('s-date',today()); sv('s-cname',''); sv('s-cphone',''); sv('s-ship','');
   populateProvinces(); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
   sv('s-prod',''); sv('s-qty',1); sv('s-price',''); sv('s-cost',''); sv('s-disc',0); sv('s-status','ລໍຖ້າ'); sv('s-note','');
   buildShipCombo(); buildBranchCombo(); buildProdCombo(); calcTotal();
@@ -965,7 +1198,7 @@ function editSale(id){
   const s=S.db.sales.find(x=>x.id===id); if(!s) return;
   document.getElementById('sale-modal-title').textContent='ແກ້ໄຂການຂາຍ';
   sv('sale-id',id); sv('s-date',s.date); sv('s-channel',s.channel||'Facebook');
-  sv('s-cname',s.customer_name||''); sv('s-cphone',s.customer_phone||''); sv('s-csource',s.customer_source||'');
+  sv('s-cname',s.customer_name||''); sv('s-cphone',s.customer_phone||'');
   sv('s-ship',s.shipping_company||''); populateProvinces(s.province||'');
   setTimeout(()=>{sv('s-prov',s.province||''); updateDistricts(s.district||'');},30);
   sv('s-branch',s.branch||''); sv('s-prod',s.product_name||'');
@@ -988,7 +1221,7 @@ async function saveSale(){
     if(nb){S.db.branches.push(nb); S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));}
   }
   const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
-    customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,customer_source:v('s-csource')||null,
+    customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,
     product_name:prod,qty,price,cost,discount:+v('s-disc')||0,
     shipping_company:ship||null,province:v('s-prov')||null,district:v('s-dist')||null,branch:v('s-branch')||null,
     status:v('s-status'),note:v('s-note')||null};
@@ -996,13 +1229,13 @@ async function saveSale(){
   if(eid){const{error}=await sb.from('sales').update(pl).eq('id',eid);err=error;if(!err)S.db.sales=S.db.sales.map(x=>x.id===eid?{...x,...pl}:x);}
   else{const{data,error}=await sb.from('sales').insert(pl).select().single();err=error;if(!err)S.db.sales.unshift(data);}
   if(err){toast(err.message,'error');return;}
-  closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesTable();
+  closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesPage();
 }
 async function delSale(id){
   if(!confirm('ລຶບລາຍການນີ້?')) return;
   const{error}=await sb.from('sales').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
-  S.db.sales=S.db.sales.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderSalesTable();
+  S.db.sales=S.db.sales.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderSalesPage();
 }
 function calcTotal(){
   const q=+v('s-qty')||0,p=+v('s-price')||0,c=+v('s-cost')||0,d=+v('s-disc')||0;
