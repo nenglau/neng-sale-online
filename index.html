@@ -197,13 +197,15 @@ textarea.fc{resize:vertical;min-height:72px}
 .period-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
 .period-tab.active{background:var(--white);color:var(--green);box-shadow:var(--shadow-sm)}
 
-/* SALES TABS */
-.sales-tab-nav{display:flex;border-top:2px solid var(--green-border);margin-top:16px}
+/* SALES TABS — fixed bottom */
+.sales-tab-nav{position:fixed;bottom:0;left:var(--sidebar-w);right:0;z-index:90;display:flex;background:var(--white);border-top:2px solid var(--green-border);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
 .sales-tab-btn{flex:1;padding:13px 12px;font-size:14px;font-weight:600;color:var(--gray-700);background:var(--white);border:none;cursor:pointer;transition:.15s;border-top:3px solid transparent;margin-top:-2px;display:flex;align-items:center;justify-content:center;gap:6px}
 .sales-tab-btn.active{color:var(--green);border-top-color:var(--green);background:var(--green-hover)}
 .sales-tab-btn:hover:not(.active){background:var(--gray-50)}
 .sales-tab-count{background:var(--orange);color:#fff;border-radius:20px;padding:1px 7px;font-size:11px}
 .sales-tab-btn.active .sales-tab-count{background:var(--green)}
+/* Add bottom padding on sales page so content doesn't hide behind fixed tab */
+#page-sales.active{padding-bottom:62px}
 
 /* EDIT TOOLBAR */
 .edit-toolbar{background:var(--green-hover);border:1px solid var(--green-border);border-radius:var(--radius);padding:10px 16px;margin:0 0 12px;align-items:center;gap:10px;flex-wrap:wrap;display:none}
@@ -271,6 +273,7 @@ textarea.fc{resize:vertical;min-height:72px}
   .chart-grid{grid-template-columns:1fr}
   .form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}
   .stat-grid{grid-template-columns:1fr 1fr}
+  .sales-tab-nav{left:0}
 }
 </style>
 </head>
