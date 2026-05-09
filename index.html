@@ -601,7 +601,7 @@ textarea.fc{resize:vertical;min-height:72px}
         </div>
         <div class="form-row cols-2">
           <div><label>ສ່ວນຫຼຸດ (₭)</label><input class="fc" type="number" id="s-disc" placeholder="0" oninput="calcTotal()"></div>
-          <div><label>ສະຖານະ</label><select class="fc" id="s-status"><option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ສຳເລັດ</option><option>ຍົກເລີກ</option></select></div>
+          <div><label>ສະຖານະ</label><select class="fc" id="s-status"><option>ລໍຖ້າ</option></select></div>
         </div>
         <div id="sale-calc" style="background:var(--green-hover);border-radius:var(--radius);padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px">
           <div><div style="color:var(--gray-500)">ຍອດລວມ</div><strong id="c-total" style="font-size:16px;color:var(--green)">0 ₭</strong></div>
@@ -1211,6 +1211,8 @@ function renderSalesTable(){
 }
 function openSaleModal(){
   sv('sale-id',''); document.getElementById('sale-modal-title').textContent='ເພີ່ມການຂາຍໃໝ່';
+  // Reset to add mode: only ລໍຖ້າ
+  document.getElementById('s-status').innerHTML='<option>ລໍຖ້າ</option>';
   sv('s-date',today()); sv('s-cname',''); sv('s-cphone',''); sv('s-ship','');
   populateProvinces(); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
   sv('s-prod',''); sv('s-qty',1); sv('s-price',''); sv('s-cost',''); sv('s-disc',0); sv('s-status','ລໍຖ້າ'); sv('s-note','');
@@ -1220,6 +1222,9 @@ function openSaleModal(){
 function editSale(id){
   const s=S.db.sales.find(x=>x.id===id); if(!s) return;
   document.getElementById('sale-modal-title').textContent='ແກ້ໄຂການຂາຍ';
+  // Show all status options when editing
+  const sel=document.getElementById('s-status');
+  sel.innerHTML='<option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ສຳເລັດ</option><option>ຍົກເລີກ</option>';
   sv('sale-id',id); sv('s-date',s.date); sv('s-channel',s.channel||'Facebook');
   sv('s-cname',s.customer_name||''); sv('s-cphone',s.customer_phone||'');
   sv('s-ship',s.shipping_company||''); populateProvinces(s.province||'');
