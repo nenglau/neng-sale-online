@@ -1,5 +1,5 @@
-const CACHE = 'hg-dashboard-v1';
-const ASSETS = ['./index.html', './icon.svg', './manifest.json'];
+const CACHE = 'hg-dashboard-v2';
+const ASSETS = ['/neng-sale-online/', '/neng-sale-online/icon.svg', '/neng-sale-online/manifest.json'];
 
 // Install: cache core files
 self.addEventListener('install', e => {

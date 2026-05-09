@@ -372,6 +372,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div id="main-content">
     <div class="topbar">
       <button id="menu-btn" style="display:none;background:none;border:none;font-size:20px;color:var(--gray-700);padding:4px 8px" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+      <button id="back-btn" style="display:none;background:none;border:none;font-size:18px;color:var(--green);padding:4px 8px;margin-right:2px" onclick="goBack()" title="ຍ້ອນກັບ"><i class="fa fa-arrow-left"></i></button>
       <span class="topbar-title" id="page-title">Dashboard</span>
       <div class="topbar-actions" id="topbar-actions"></div>
     </div>
@@ -808,6 +809,7 @@ let S = {
   user:null, profile:null, company:null, role:null, page:'dashboard',
   finPeriod:'month', adsPeriod:'7day', repPeriod:'7day',
   salesTab:'pending', dashPeriod:'all', pendingEditMode:false,
+  navHistory:[],
   db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}
 };
 let charts = {};
@@ -966,8 +968,13 @@ function toggleSettings(){
   sub.style.display=open?'none':'block';
   arr.style.transform=open?'':'rotate(90deg)';
 }
-function navigate(page){
+function navigate(page, pushHistory=true){
   if(page==='company') page='co-info';
+  // push current page to history before switching (only if different)
+  if(pushHistory && S.page && S.page!==page){
+    S.navHistory.push(S.page);
+    if(S.navHistory.length>20) S.navHistory.shift();
+  }
   // auto-open settings submenu for settings pages
   if(page==='co-info'||page==='co-shipping'){
     document.getElementById('settings-submenu').style.display='block';
@@ -983,8 +990,16 @@ function navigate(page){
   document.getElementById('page-title').textContent=PAGE_TITLES[page]||page;
   const ta=document.getElementById('topbar-actions');
   ta.innerHTML=(page!=='dashboard')?`<button class="btn btn-outline btn-sm" onclick="showExportMenu(this,'${page}')"><i class="fa fa-download"></i> Export</button><button class="btn btn-outline btn-sm" onclick="refreshData()"><i class="fa fa-sync"></i></button>`:'<button class="btn btn-outline btn-sm" onclick="refreshData()"><i class="fa fa-sync"></i></button>';
+  // show/hide back button
+  const bb=document.getElementById('back-btn');
+  if(bb) bb.style.display=S.navHistory.length?'inline-flex':'none';
   renderPage(page);
   if(window.innerWidth<=768) document.getElementById('sidebar').classList.remove('open');
+}
+function goBack(){
+  if(!S.navHistory.length) return;
+  const prev=S.navHistory.pop();
+  navigate(prev, false);
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 function renderPage(p){
@@ -1522,28 +1537,45 @@ function renderShippingWithBranches(){
     const branches=S.db.branches.filter(b=>b.shipping_company_id===sc.id);
     const bid='sc-branches-'+sc.id;
     const cnt=branches.length;
-    // Group by province
+    // Level 1: group by province
     const byProv={};
     branches.forEach(b=>{const p=b.province||'ບໍ່ລະບຸ';if(!byProv[p])byProv[p]=[];byProv[p].push(b);});
-    const branchHTML=Object.keys(byProv).map(prov=>{
-      const pid='prov-'+sc.id+'-'+prov.replace(/\s/g,'_');
-      const items=byProv[prov];
-      return `<div style="margin-bottom:4px">
-        <div onclick="toggleAccordion('${pid}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--gray-100);border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;user-select:none">
-          <i id="arr-${pid}" class="fa fa-chevron-right" style="font-size:10px;transition:.2s;color:var(--gray-500)"></i>
-          <i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i>
-          ${esc(prov)}
-          <span style="margin-left:auto;font-size:11px;color:var(--gray-500);font-weight:400">${items.length} ສາຂາ</span>
-        </div>
-        <div id="${pid}" style="display:none;padding:2px 0 2px 24px">
-          ${items.map(b=>{const loc=[b.district,b.name].filter(Boolean).join(' › ');
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--gray-100)">
-              <span style="font-size:13px">📍 ${esc(loc||b.province||'-')}</span>
+    const branchHTML=Object.keys(byProv).sort().map(prov=>{
+      const pid='prov-'+sc.id+'-'+prov.replace(/\W/g,'_');
+      const provBranches=byProv[prov];
+      // Level 2: group by district inside province
+      const byDist={};
+      provBranches.forEach(b=>{const d=b.district||'ບໍ່ລະບຸເມືອງ';if(!byDist[d])byDist[d]=[];byDist[d].push(b);});
+      const distHTML=Object.keys(byDist).sort().map(dist=>{
+        const did='dist-'+sc.id+'-'+prov.replace(/\W/g,'_')+'-'+dist.replace(/\W/g,'_');
+        const distBranches=byDist[dist];
+        return `<div style="margin-bottom:3px">
+          <div onclick="toggleAccordion('${did}')" style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--gray-50);border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;user-select:none">
+            <i id="arr-${did}" class="fa fa-chevron-right" style="font-size:9px;transition:.2s;color:var(--gray-500)"></i>
+            <i class="fa fa-city" style="color:var(--blue);font-size:11px"></i>
+            ເມືອງ${esc(dist)}
+            <span style="margin-left:auto;font-size:11px;color:var(--gray-500);font-weight:400">${distBranches.length} ສາຂາ</span>
+          </div>
+          <div id="${did}" style="display:none;padding:2px 0 2px 22px">
+            ${distBranches.map(b=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--gray-100)">
+              <span style="font-size:13px">📍 ${esc(b.name||'-')}</span>
               <div style="display:flex;gap:4px">
                 <button class="btn-icon" style="color:var(--blue)" onclick="openEditBranch('${b.id}','${esc(b.name||'')}','${esc(b.province||'')}','${esc(b.district||'')}','${sc.id}')"><i class="fa fa-pen" style="font-size:10px"></i></button>
                 <button class="btn-icon del" onclick="delBranch('${b.id}')">✕</button>
               </div>
-            </div>`;}).join('')}
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }).join('');
+      return `<div style="margin-bottom:4px">
+        <div onclick="toggleAccordion('${pid}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--gray-100);border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;user-select:none">
+          <i id="arr-${pid}" class="fa fa-chevron-right" style="font-size:10px;transition:.2s;color:var(--gray-500)"></i>
+          <i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i>
+          ແຂວງ${esc(prov)}
+          <span style="margin-left:auto;font-size:11px;color:var(--gray-500);font-weight:400">${provBranches.length} ສາຂາ</span>
+        </div>
+        <div id="${pid}" style="display:none;padding:4px 0 4px 18px">
+          ${distHTML}
         </div>
       </div>`;
     }).join('');
