@@ -1,0 +1,22 @@
+{
+  "name": "Herb & Gadget Dashboard",
+  "short_name": "H&G",
+  "description": "ລະບົບຈັດການຍອດຂາຍ Herb & Gadget Online",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f1f8e9",
+  "theme_color": "#2e7d32",
+  "orientation": "any",
+  "lang": "lo",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["business", "productivity"]
+}
