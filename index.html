@@ -576,7 +576,7 @@ textarea.fc{resize:vertical;min-height:72px}
           <div><label>ແຂວງ</label><select class="fc" id="s-prov" onchange="updateDistricts()"><option value="">-- ເລືອກ --</option></select></div>
         </div>
         <div class="form-row cols-2">
-          <div><label>ເມືອງ</label><select class="fc" id="s-dist"><option value="">-- ເລືອກ --</option></select></div>
+          <div><label>ເມືອງ</label><select class="fc" id="s-dist" onchange="sv('s-branch',''); buildBranchCombo();"><option value="">-- ເລືອກ --</option></select></div>
           <div><label>ສາຂາ / ທີ່ຢູ່</label>
             <div class="combo-wrap">
               <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterCombo('branch')" onfocus="openCombo('branch')" onblur="setTimeout(()=>closeCombo('branch'),200)">
@@ -1165,46 +1165,69 @@ async function markShippedAndPrint(){
 }
 function printShippingOrders(orders){
   const co=S.company.name||'';
-  const rows=orders.map((s,i)=>{
+  const cards=orders.map((s,idx)=>{
     const tot=s.qty*s.price-(s.discount||0);
     const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
     const br=sc?S.db.branches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
     const prov=br?br.province:(s.province||'');
     const dist=br?br.district:(s.district||'');
-    const addr=[prov,dist,s.branch].filter(Boolean).join(' › ');
-    return `<tr>
-      <td>${i+1}</td>
-      <td>${fmtDate(s.date)}</td>
-      <td><strong>${s.customer_name||'—'}</strong><br><small>${s.customer_phone||''}</small></td>
-      <td>${s.product_name||'-'} × ${s.qty}</td>
-      <td style="text-align:right;font-weight:bold">${fmt(tot)} ₭</td>
-      <td>${s.shipping_company||'-'}</td>
-      <td>${addr||'-'}</td>
-    </tr>`;
+    const branchName=s.branch||'';
+    const isLast=idx===orders.length-1;
+    return `<div class="card${isLast?'':' page-break'}">
+      <!-- SENDER HALF -->
+      <div class="sender">
+        <div class="row2">
+          <span class="field-line">ຊ<span class="dots">...............................</span></span>
+          <span class="field-r">ເບີໂທ: <strong>${esc(s.customer_phone||'')}</strong></span>
+        </div>
+        <div class="row2">
+          <span class="field-line">ປະເພດ: <span class="dots">.............</span></span>
+          <span class="field-r">ຊ<span class="dots">........</span></span>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <!-- RECIPIENT HALF -->
+      <div class="recipient">
+        <div class="recip-name">ຜູ້ຮັບ: <strong>${esc(s.customer_name||s.customer_phone||'—')}</strong>${s.customer_name&&s.customer_phone?`<span style="margin-left:6px;color:#555">${esc(s.customer_phone)}</span>`:''}</div>
+        <div class="row2">
+          <span>ສາຂາ: <strong>${esc(branchName)}</strong></span>
+          <span class="field-r">ເມືອງ: <strong>${esc(dist)}</strong></span>
+        </div>
+        <div class="row-right">ແຂວງ: <strong>${esc(prov)}</strong></div>
+        <div class="row2 cod-row">
+          <span>COD: <span class="dots">.................</span> ກີບ</span>
+          <span class="field-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
+        </div>
+      </div>
+    </div>`;
   }).join('');
   const html=`<!DOCTYPE html><html lang="lo"><head><meta charset="UTF-8">
   <title>ລາຍການຈັດສົ່ງ - ${co}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&display=swap">
   <style>
-    body{font-family:'Noto Sans Lao',sans-serif;font-size:13px;padding:20px;color:#212121}
-    h2{font-size:16px;margin-bottom:4px}
-    p{color:#666;font-size:12px;margin-bottom:16px}
-    table{width:100%;border-collapse:collapse}
-    th{background:#e8f5e9;color:#2e7d32;padding:8px;text-align:left;font-size:12px}
-    td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
-    tr:hover{background:#fafafa}
-    @media print{body{padding:8px}}
+    @page{size:85.6mm 53.98mm;margin:0}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Noto Sans Lao',sans-serif;font-size:8.5pt;color:#111;background:#fff}
+    .card{width:85.6mm;height:53.98mm;padding:2.5mm 3mm;display:flex;flex-direction:column;justify-content:space-between;border:0.5pt solid #bbb}
+    .page-break{page-break-after:always}
+    .sender{display:flex;flex-direction:column;gap:1.5mm;padding-bottom:1mm}
+    .recipient{display:flex;flex-direction:column;gap:1.2mm;padding-top:1mm}
+    .row2{display:flex;justify-content:space-between;align-items:baseline;gap:2mm}
+    .row-right{text-align:right;font-size:7.5pt}
+    .field-r{text-align:right;white-space:nowrap}
+    .field-line{white-space:nowrap}
+    .dots{letter-spacing:1pt;color:#333}
+    .sep{border-top:1pt dashed #555;margin:1mm 0}
+    .recip-name{font-size:9pt;margin-bottom:1mm}
+    .cod-row{margin-top:0.5mm}
+    strong{font-weight:700}
+    @media print{.card{border:0.5pt solid #bbb}body{-webkit-print-color-adjust:exact}}
   </style>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao&display=swap">
   </head><body>
-  <h2>📦 ລາຍການຈັດສົ່ງ — ${co}</h2>
-  <p>ວັນທີ: ${fmtDate(today())} | ຈຳນວນ: ${orders.length} ລາຍການ</p>
-  <table>
-    <thead><tr><th>#</th><th>ວັນທີ</th><th>ລູກຄ້າ</th><th>ສິນຄ້າ</th><th>ຍອດ</th><th>ຂົນສົ່ງ</th><th>ທີ່ຢູ່</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
+  ${cards}
   <script>window.onload=function(){window.print();}<\/script>
   </body></html>`;
-  const w=window.open('','_blank','width=900,height=650');
+  const w=window.open('','_blank','width=500,height=400');
   if(w){w.document.write(html);w.document.close();}
 }
 function renderSalesTable(){
@@ -1728,10 +1751,12 @@ function pickShip(name){
 }
 function buildBranchCombo(){
   const shipName=v('s-ship').trim();
+  const distName=v('s-dist').trim();
   const sc=S.db.shipCos.find(x=>x.name===shipName);
   const list=document.getElementById('combo-branch');
   if(!list) return;
-  const branches=sc?S.db.branches.filter(b=>b.shipping_company_id===sc.id):[];
+  let branches=sc?S.db.branches.filter(b=>b.shipping_company_id===sc.id):[];
+  if(distName) branches=branches.filter(b=>b.district===distName);
   list.innerHTML=branches.map(b=>`<div class="combo-item" onmousedown="pickComboVal('s-branch','${esc(b.name)}')">${esc(b.name)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
 }
 function filterCombo(type){
