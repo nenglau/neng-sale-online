@@ -1809,7 +1809,8 @@ function buildShipCombo(){
   list.innerHTML=S.db.shipCos.map(s=>`<div class="combo-item" onmousedown="pickShip('${esc(s.name)}')">${esc(s.name)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
 }
 function pickShip(name){
-  sv('s-ship',name); sv('s-branch',''); buildBranchCombo(); closeCombo('ship');
+  sv('s-ship',name); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
+  populateProvinces(); closeCombo('ship');
 }
 function buildBranchCombo(){
   const shipName=v('s-ship').trim();
@@ -1837,14 +1838,30 @@ function pickProd(name,price,cost){sv('s-prod',name);sv('s-price',price);sv('s-c
 // ══════════════════════════════════════
 function populateProvinces(sel=''){
   const el=document.getElementById('s-prov'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກແຂວງ --</option>';
-  Object.keys(LAO_GEO).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
+  el.innerHTML='<option value="">-- ເລືອກ --</option>';
+  const shipName=v('s-ship').trim();
+  const sc=S.db.shipCos.find(x=>x.name===shipName);
+  if(sc){
+    // Only provinces that have branches for this company
+    const provs=[...new Set(S.db.branches.filter(b=>b.shipping_company_id===sc.id&&b.province).map(b=>b.province))].sort();
+    provs.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
+  } else {
+    Object.keys(LAO_GEO).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
+  }
   if(!sel) updateDistricts();
 }
 function updateDistricts(sel=''){
   const prov=v('s-prov'), el=document.getElementById('s-dist'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກເມືອງ --</option>';
-  if(prov&&LAO_GEO[prov]) LAO_GEO[prov].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
+  el.innerHTML='<option value="">-- ເລືອກ --</option>';
+  const shipName=v('s-ship').trim();
+  const sc=S.db.shipCos.find(x=>x.name===shipName);
+  if(sc&&prov){
+    // Only districts that have branches for this company in this province
+    const dists=[...new Set(S.db.branches.filter(b=>b.shipping_company_id===sc.id&&b.province===prov&&b.district).map(b=>b.district))].sort();
+    dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
+  } else if(prov&&LAO_GEO[prov]){
+    LAO_GEO[prov].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
+  }
 }
 
 // ══════════════════════════════════════
