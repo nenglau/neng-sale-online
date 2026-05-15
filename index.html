@@ -418,8 +418,7 @@ textarea.fc{resize:vertical;min-height:72px}
             <div class="edit-toolbar" id="pending-edit-toolbar">
               <button class="btn btn-outline btn-sm" onclick="selectAllPending()"><i class="fa fa-check-double"></i> ເລືອກທັງໝົດ</button>
               <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="markShippedAndPrint()"><i class="fa fa-truck"></i> ຈັດສົ່ງແລ້ວ (Print)</button>
-              <button class="btn btn-outline btn-sm" onclick="openSellerModal()" title="ຕັ້ງຄ່າຂໍ້ມູນຜູ້ຂາຍ" style="margin-left:auto"><i class="fa fa-user-edit"></i> ຜູ້ຂາຍ</button>
-              <span id="pending-selected-count" style="font-size:12px;color:var(--gray-700)"></span>
+              <span id="pending-selected-count" style="font-size:12px;color:var(--gray-700);margin-left:auto"></span>
             </div>
             <div class="panel-body" id="pending-orders-list" style="padding:12px 16px">
               <div class="empty"><i class="fa fa-inbox"></i><p>ກຳລັງໂຫຼດ...</p></div>
@@ -1032,6 +1031,8 @@ function saveSellerInfo(){
   }catch(e){}
   closeModal('modal-seller');
   toast('ບັນທຶກຂໍ້ມູນຜູ້ຂາຍສຳເລັດ ✓','success');
+  // refresh co-info panel preview if currently viewing it
+  if(S.page==='co-info') renderCoInfo();
 }
 function getSellerInfo(){
   try{return{shop:localStorage.getItem('hg_seller_shop')||S.company?.name||'',name:localStorage.getItem('hg_seller_name')||'',phone:localStorage.getItem('hg_seller_phone')||''};}
@@ -1554,14 +1555,31 @@ function drawRepChannel(data){
 // ══════════════════════════════════════
 function renderCoInfo(){
   const el=document.getElementById('co-info-content')||document.getElementById('co-settings');
+  const sl=getSellerInfo();
   el.innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px">
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">ຂໍ້ມູນບໍລິສັດ</span></div>
-        <div class="panel-body">
-          <div class="form-group"><label>ຊື່ *</label><input class="fc" id="co-name" value="${esc(S.company.name)}"></div>
-          <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(GAS_URL)}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
-          <button class="btn btn-green" onclick="saveCoSettings()">💾 ບັນທຶກ</button>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">ຂໍ້ມູນບໍລິສັດ</span></div>
+          <div class="panel-body">
+            <div class="form-group"><label>ຊື່ *</label><input class="fc" id="co-name" value="${esc(S.company.name)}"></div>
+            <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(GAS_URL)}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
+            <button class="btn btn-green" onclick="saveCoSettings()">💾 ບັນທຶກ</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🏪 ຂໍ້ມູນຜູ້ຂາຍ (ສຳລັບພິມບິນ)</span>
+            <button class="btn btn-outline btn-sm" onclick="openSellerModal()"><i class="fa fa-pen"></i> ແກ້ໄຂ</button>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+              <div><span style="color:var(--gray-500)">ຮ້ານ:</span> <strong>${esc(sl.shop||'—')}</strong></div>
+              <div><span style="color:var(--gray-500)">ເບີໂທ:</span> <strong>${esc(sl.phone||'—')}</strong></div>
+              <div><span style="color:var(--gray-500)">ຊື່ຜູ້ຂາຍ:</span> <strong>${esc(sl.name||'—')}</strong></div>
+            </div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:10px">ຂໍ້ມູນນີ້ຈະສະແດງໃນ "ສ່ວນຜູ້ຂາຍ" ເທີ່ງບິນຈັດສົ່ງ</div>
+          </div>
         </div>
       </div>
       <div class="panel">
