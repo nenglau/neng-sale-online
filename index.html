@@ -1214,6 +1214,8 @@ function printShippingOrders(orders){
     const prov=br?br.province:(s.province||'');
     const dist=br?br.district:(s.district||'');
     const branchName=s.branch||'';
+    const prod=S.db.products.find(p=>p.name===s.product_name);
+    const category=prod?prod.category||'':s.product_name||'';
     const isLast=idx===orders.length-1;
     return `<div class="card${isLast?'':' page-break'}">
       <!-- SENDER HALF -->
@@ -1223,7 +1225,7 @@ function printShippingOrders(orders){
           <span class="field-r">ເບີໂທ: <strong>${esc(seller.phone)}</strong></span>
         </div>
         <div class="row2">
-          <span>ປະເພດ: <strong>${esc(s.shipping_company||'')}</strong></span>
+          <span>ປະເພດ: <strong>${esc(category)}</strong></span>
           <span class="field-r">ຊ: <strong>${esc(seller.name)}</strong></span>
         </div>
       </div>
@@ -1231,17 +1233,14 @@ function printShippingOrders(orders){
       <!-- RECIPIENT HALF -->
       <div class="recipient">
         <div class="recip-name">ຜູ້ຮັບ: <strong>${esc(s.customer_name||'—')}</strong>${s.customer_phone?`<span class="phone"> ${esc(s.customer_phone)}</span>`:''}</div>
-        <div class="row2">
-          <span>ສາຂາ: <strong>${esc(branchName)}</strong></span>
-          <span class="col-r">ເມືອງ: <strong>${esc(dist)}</strong></span>
-        </div>
-        <div class="row2">
-          <span>COD: <strong>${fmt(tot)}</strong> ກີບ</span>
-          <span class="col-r">ແຂວງ: <strong>${esc(prov)}</strong></span>
+        <div class="row3">
+          <span class="c3l">ສາຂາ: <strong>${esc(branchName)}</strong></span>
+          <span class="c3m">ເມືອງ: <strong>${esc(dist)}</strong></span>
+          <span class="c3r">ແຂວງ: <strong>${esc(prov)}</strong></span>
         </div>
         <div class="row2 cod-row">
-          <span></span>
-          <span class="col-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
+          <span>COD: <strong>${fmt(tot)}</strong> ກີບ</span>
+          <span class="field-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
         </div>
       </div>
     </div>`;
@@ -1258,6 +1257,10 @@ function printShippingOrders(orders){
     .sender{display:flex;flex-direction:column;gap:1.4mm}
     .recipient{display:flex;flex-direction:column;gap:1.1mm;padding-top:0.5mm}
     .row2{display:flex;justify-content:space-between;align-items:baseline;gap:2mm}
+    .row3{display:flex;align-items:baseline;gap:1mm}
+    .c3l{flex:1.2;text-align:left;overflow:hidden}
+    .c3m{flex:1;text-align:left;overflow:hidden}
+    .c3r{flex:1.2;text-align:left;overflow:hidden}
     .field-r{text-align:right;white-space:nowrap}
     .col-r{text-align:left;white-space:nowrap;padding-left:3mm}
     .dots{letter-spacing:1pt;color:#333}
