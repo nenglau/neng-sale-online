@@ -1192,10 +1192,10 @@ async function markShippedAndPrint(){
   const ids=checked.map(c=>c.id.replace('chk-',''));
   const ordersToShip=S.db.sales.filter(s=>ids.includes(s.id));
   // Update Supabase
-  const{error}=await sb.from('sales').update({status:'ຈັດສົ່ງ'}).in('id',ids);
+  const{error}=await sb.from('sales').update({status:'ສຳເລັດ'}).in('id',ids);
   if(error){toast(error.message,'error');return;}
-  S.db.sales=S.db.sales.map(s=>ids.includes(s.id)?{...s,status:'ຈັດສົ່ງ'}:s);
-  toast(`ອັບເດດ ${ids.length} ລາຍການ → ຈັດສົ່ງ ✓`,'success');
+  S.db.sales=S.db.sales.map(s=>ids.includes(s.id)?{...s,status:'ສຳເລັດ'}:s);
+  toast(`ອັບເດດ ${ids.length} ລາຍການ → ສຳເລັດ ✓`,'success');
   // Print
   printShippingOrders(ordersToShip);
   S.pendingEditMode=false;
