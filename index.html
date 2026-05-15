@@ -437,7 +437,16 @@ textarea.fc{resize:vertical;min-height:72px}
                 <button class="btn btn-green" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
               </div>
             </div>
-            <div class="table-wrap"><table><thead><tr><th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ລູກຄ້າ</th><th>ຈຳ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຂົນສົ່ງ</th><th>ຈັດການ</th></tr></thead><tbody id="sales-tbody"></tbody></table></div>
+            <!-- Bulk toolbar -->
+            <div id="sales-bulk-bar" style="display:none;align-items:center;gap:10px;padding:8px 16px;background:var(--orange-light);border-bottom:1px solid #ffe0b2">
+              <span id="sales-bulk-count" style="font-size:13px;color:var(--gray-700)"></span>
+              <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="bulkDeleteSales()"><i class="fa fa-trash"></i> ລົບທີ່ເລືອກ</button>
+              <button class="btn btn-outline btn-sm" onclick="clearSalesSelection()">ຍົກເລີກ</button>
+            </div>
+            <div class="table-wrap"><table><thead><tr>
+              <th style="width:32px"><input type="checkbox" id="sales-chk-all" onchange="toggleSelectAllSales(this.checked)" style="cursor:pointer"></th>
+              <th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ລູກຄ້າ</th><th>ຈຳ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຂົນສົ່ງ</th><th>ຈັດການ</th>
+            </tr></thead><tbody id="sales-tbody"></tbody></table></div>
           </div>
         </div>
 
@@ -1288,7 +1297,8 @@ function renderSalesTable(){
   if(!data.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
   tb.innerHTML=data.map((s,i)=>{
     const tot=s.qty*s.price-(s.discount||0), pr=s.qty*(s.price-s.cost)-(s.discount||0);
-    return `<tr><td style="color:var(--gray-500)">${i+1}</td><td>${fmtDate(s.date)}</td><td style="font-weight:700">${esc(s.product_name||'-')}</td>
+    return `<tr><td><input type="checkbox" class="sale-chk" data-id="${s.id}" onchange="updateSalesBulkBar()" style="cursor:pointer"></td>
+    <td style="color:var(--gray-500)">${i+1}</td><td>${fmtDate(s.date)}</td><td style="font-weight:700">${esc(s.product_name||'-')}</td>
     <td>${esc(s.customer_name||'-')}<br><small style="color:var(--gray-500)">${s.customer_phone||''}</small></td>
     <td style="text-align:center">${s.qty}</td><td>${fmt(s.price)} ₭</td>
     <td style="color:var(--orange)">${s.discount?fmt(s.discount)+' ₭':'-'}</td>
@@ -1297,6 +1307,38 @@ function renderSalesTable(){
     <td>${badge(s.status)}</td><td style="font-size:12px">${esc(s.shipping_company||'-')}</td>
     <td><button class="btn-icon edit" onclick="editSale('${s.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delSale('${s.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
   }).join('');
+  // reset header checkbox
+  const ca=document.getElementById('sales-chk-all'); if(ca) ca.checked=false;
+  updateSalesBulkBar();
+}
+function toggleSelectAllSales(checked){
+  document.querySelectorAll('.sale-chk').forEach(c=>c.checked=checked);
+  updateSalesBulkBar();
+}
+function updateSalesBulkBar(){
+  const checked=[...document.querySelectorAll('.sale-chk:checked')];
+  const bar=document.getElementById('sales-bulk-bar');
+  const lbl=document.getElementById('sales-bulk-count');
+  const ca=document.getElementById('sales-chk-all');
+  const all=document.querySelectorAll('.sale-chk');
+  if(bar) bar.style.display=checked.length?'flex':'none';
+  if(lbl) lbl.textContent=`ເລືອກແລ້ວ ${checked.length} ລາຍການ`;
+  if(ca) ca.indeterminate=checked.length>0&&checked.length<all.length, ca.checked=all.length>0&&checked.length===all.length;
+}
+function clearSalesSelection(){
+  document.querySelectorAll('.sale-chk').forEach(c=>c.checked=false);
+  const ca=document.getElementById('sales-chk-all'); if(ca) ca.checked=false;
+  updateSalesBulkBar();
+}
+async function bulkDeleteSales(){
+  const ids=[...document.querySelectorAll('.sale-chk:checked')].map(c=>c.dataset.id);
+  if(!ids.length) return;
+  if(!confirm(`ລົບ ${ids.length} ລາຍການທີ່ເລືອກ?\nການກະທຳນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້`)) return;
+  const{error}=await sb.from('sales').delete().in('id',ids);
+  if(error){toast(error.message,'error');return;}
+  S.db.sales=S.db.sales.filter(s=>!ids.includes(s.id));
+  toast(`ລົບ ${ids.length} ລາຍການສຳເລັດ`,'success');
+  renderSalesTable(); updatePendingCount();
 }
 function openSaleModal(){
   sv('sale-id',''); document.getElementById('sale-modal-title').textContent='ເພີ່ມການຂາຍໃໝ່';
