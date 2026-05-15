@@ -1220,13 +1220,11 @@ function printShippingOrders(orders){
     return `<div class="card${isLast?'':' page-break'}">
       <!-- SENDER HALF -->
       <div class="sender">
-        <div class="row2">
-          <span>ຮ້ານ: <strong>${esc(seller.shop)}</strong></span>
-          <span class="field-r">ເບີໂທ: <strong>${esc(seller.phone)}</strong></span>
-        </div>
-        <div class="row2">
+        <div class="shop-name">ຮ້ານ: <strong>${esc(seller.shop)}</strong></div>
+        <div class="seller-row">
+          <span>ເບີໂທ: <strong>${esc(seller.phone)}</strong></span>
+          <span>ຊ: <strong>${esc(seller.name)}</strong></span>
           <span>ປະເພດ: <strong>${esc(category)}</strong></span>
-          <span class="field-r">ຊ: <strong>${esc(seller.name)}</strong></span>
         </div>
       </div>
       <div class="sep"></div>
@@ -1252,10 +1250,12 @@ function printShippingOrders(orders){
     @page{size:85.6mm 53.98mm;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Noto Sans Lao',sans-serif;font-size:8.5pt;color:#111;background:#fff}
-    .card{width:85.6mm;height:53.98mm;padding:2.5mm 3mm;display:flex;flex-direction:column;justify-content:space-between;border:0.5pt solid #bbb}
+    .card{width:85.6mm;height:53.98mm;padding:2.5mm 3mm;display:flex;flex-direction:column;border:0.5pt solid #bbb}
     .page-break{page-break-after:always}
-    .sender{display:flex;flex-direction:column;gap:1.4mm}
-    .recipient{display:flex;flex-direction:column;gap:1.1mm;padding-top:0.5mm}
+    .sender{display:flex;flex-direction:column;justify-content:space-between;flex:1}
+    .shop-name{text-align:center;font-size:9.5pt;padding-top:0.5mm}
+    .seller-row{display:flex;justify-content:space-between;align-items:baseline;gap:1mm;font-size:7.5pt;padding-bottom:0.5mm}
+    .recipient{display:flex;flex-direction:column;gap:1.1mm;padding-top:0.5mm;flex:1}
     .row2{display:flex;justify-content:space-between;align-items:baseline;gap:2mm}
     .row3{display:flex;align-items:baseline;gap:1mm}
     .c3l{flex:1.2;text-align:left;overflow:hidden}
