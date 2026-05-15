@@ -1231,12 +1231,17 @@ function printShippingOrders(orders){
       <!-- RECIPIENT HALF -->
       <div class="recipient">
         <div class="recip-name">ຜູ້ຮັບ: <strong>${esc(s.customer_name||'—')}</strong>${s.customer_phone?`<span class="phone"> ${esc(s.customer_phone)}</span>`:''}</div>
-        <div>ສາຂາ: <strong>${esc(branchName)}</strong></div>
-        <div>ເມືອງ: <strong>${esc(dist)}</strong></div>
-        <div>ແຂວງ: <strong>${esc(prov)}</strong></div>
-        <div class="row2 cod-row">
+        <div class="row2">
+          <span>ສາຂາ: <strong>${esc(branchName)}</strong></span>
+          <span class="col-r">ເມືອງ: <strong>${esc(dist)}</strong></span>
+        </div>
+        <div class="row2">
           <span>COD: <strong>${fmt(tot)}</strong> ກີບ</span>
-          <span class="field-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
+          <span class="col-r">ແຂວງ: <strong>${esc(prov)}</strong></span>
+        </div>
+        <div class="row2 cod-row">
+          <span></span>
+          <span class="col-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
         </div>
       </div>
     </div>`;
@@ -1254,6 +1259,7 @@ function printShippingOrders(orders){
     .recipient{display:flex;flex-direction:column;gap:1.1mm;padding-top:0.5mm}
     .row2{display:flex;justify-content:space-between;align-items:baseline;gap:2mm}
     .field-r{text-align:right;white-space:nowrap}
+    .col-r{text-align:left;white-space:nowrap;padding-left:3mm}
     .dots{letter-spacing:1pt;color:#333}
     .sep{border-top:1pt dashed #666;margin:1.5mm 0 0.5mm}
     .recip-name{font-size:9pt}
