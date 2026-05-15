@@ -1214,16 +1214,17 @@ function printShippingOrders(orders){
     const prov=br?br.province:(s.province||'');
     const dist=br?br.district:(s.district||'');
     const branchName=s.branch||'';
-    const prod=S.db.products.find(p=>p.name===s.product_name);
-    const category=prod?prod.category||'':s.product_name||'';
+    // fix2: case-insensitive product lookup, use category field
+    const prodName=(s.product_name||'').trim().toLowerCase();
+    const prod=S.db.products.find(p=>(p.name||'').trim().toLowerCase()===prodName);
+    const category=prod&&prod.category?prod.category:'';
     const isLast=idx===orders.length-1;
     return `<div class="card${isLast?'':' page-break'}">
       <!-- SENDER HALF -->
       <div class="sender">
         <div class="shop-name">ຮ້ານ: <strong>${esc(seller.shop)}</strong></div>
         <div class="seller-row">
-          <span>ເບີໂທ: <strong>${esc(seller.phone)}</strong></span>
-          <span>ຊ: <strong>${esc(seller.name)}</strong></span>
+          <span>ເບີໂທ: <strong>${esc(seller.phone)}</strong> ${esc(seller.name)}</span>
           <span>ປະເພດ: <strong>${esc(category)}</strong></span>
         </div>
       </div>
@@ -1241,6 +1242,7 @@ function printShippingOrders(orders){
           <span class="field-r">ວັນທີ: <strong>${esc(fmtDate(s.date))}</strong></span>
         </div>
       </div>
+      <div class="ship-footer">ຂົນສົ່ງ: <strong>${esc(s.shipping_company||'')}</strong></div>
     </div>`;
   }).join('');
   const html=`<!DOCTYPE html><html lang="lo"><head><meta charset="UTF-8">
@@ -1257,10 +1259,11 @@ function printShippingOrders(orders){
     .seller-row{display:flex;justify-content:space-between;align-items:baseline;gap:1mm;font-size:7.5pt;padding-bottom:0.5mm}
     .recipient{display:flex;flex-direction:column;gap:1.1mm;padding-top:0.5mm;flex:1}
     .row2{display:flex;justify-content:space-between;align-items:baseline;gap:2mm}
-    .row3{display:flex;align-items:baseline;gap:1mm}
-    .c3l{flex:1.2;text-align:left;overflow:hidden}
-    .c3m{flex:1;text-align:left;overflow:hidden}
-    .c3r{flex:1.2;text-align:left;overflow:hidden}
+    .row3{display:flex;align-items:baseline;gap:0.5mm;font-size:7pt}
+    .c3l{flex:1.3;text-align:left;overflow:hidden;white-space:nowrap}
+    .c3m{flex:1.1;text-align:left;overflow:hidden;white-space:nowrap}
+    .c3r{flex:1.3;text-align:left;overflow:hidden;white-space:nowrap}
+    .ship-footer{text-align:center;font-size:7.5pt;padding-top:1mm;border-top:0.5pt solid #ccc;margin-top:0.5mm}
     .field-r{text-align:right;white-space:nowrap}
     .col-r{text-align:left;white-space:nowrap;padding-left:3mm}
     .dots{letter-spacing:1pt;color:#333}
