@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Herb & Gadget Online — Dashboard</title>
+<title>Nsale Manager</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="H&G Dashboard">
+<meta name="apple-mobile-web-app-title" content="Nsale Manager">
 <link rel="apple-touch-icon" href="icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +36,7 @@ body{font-family:'Noto Sans Lao',sans-serif;background:var(--green-bg);color:var
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;border:none;font-family:inherit;font-size:15px}
 input,select,textarea{font-family:inherit;font-size:15px}
+datalist option{font-family:'Noto Sans Lao',sans-serif}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--green-pale);border-radius:3px}
@@ -191,6 +193,14 @@ textarea.fc{resize:vertical;min-height:72px}
 .chart-panel{background:var(--white);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm)}
 .chart-title{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:16px}
 .chart-wrap{position:relative;height:240px}
+.rep-city-list{height:240px;overflow-y:auto}
+.rep-city-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-200)}
+.rep-city-row:last-child{border-bottom:none}
+.rep-city-rank{width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rep-city-name{flex:1;font-size:13px;font-weight:600;color:var(--gray-900);min-width:0}
+.rep-city-prov{font-size:11px;color:var(--gray-500);font-weight:500}
+.rep-city-rev{font-size:13px;font-weight:700;color:var(--gray-900);white-space:nowrap}
+.rep-city-pct{font-size:12px;font-weight:700;color:var(--green);min-width:48px;text-align:right}
 
 /* PERIOD TABS */
 .period-tabs{display:flex;background:var(--gray-100);border-radius:var(--radius);padding:3px;gap:2px}
@@ -212,17 +222,29 @@ textarea.fc{resize:vertical;min-height:72px}
 .edit-toolbar.visible{display:flex}
 
 /* PENDING ORDER CARD */
-.order-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-200);padding:14px 16px;margin-bottom:10px;position:relative;transition:.15s}
-.order-card:hover{border-color:var(--green-light);box-shadow:var(--shadow-sm)}
+.order-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--gray-200);padding:16px;margin-bottom:12px;position:relative;transition:.15s;box-shadow:var(--shadow-sm)}
+.order-card:hover{border-color:var(--green-light);box-shadow:var(--shadow)}
 .order-card.selected{border-color:var(--green);background:var(--green-hover)}
-.order-card-check{position:absolute;top:12px;left:12px;width:18px;height:18px;cursor:pointer;display:none}
+.order-card-check{position:absolute;top:16px;left:16px;width:20px;height:20px;cursor:pointer;display:none}
 .edit-mode .order-card-check{display:block}
-.edit-mode .order-card{padding-left:38px}
-.order-card-row{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-start}
-.order-field{font-size:13px;color:var(--gray-700)}
+.edit-mode .order-card{padding-left:48px}
+.order-card-row{display:grid;grid-template-columns:auto auto 1fr auto auto auto;gap:12px 16px;align-items:center}
+.order-card-row .order-field{display:flex;align-items:center;gap:6px}
+.order-field{font-size:14px;color:var(--gray-700)}
 .order-field strong{color:var(--gray-900)}
 .order-field.highlight{color:var(--green);font-weight:700}
-.order-shipping-tag{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border-radius:var(--radius);padding:3px 10px;font-size:12px;font-weight:600}
+.order-shipping-tag{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border-radius:var(--radius);padding:4px 12px;font-size:12px;font-weight:600}
+.order-card-actions{display:flex;gap:8px;align-items:center}
+.order-card-actions .btn-icon{width:32px;height:32px;font-size:13px}
+
+@media(max-width:768px){
+  .order-card-row{grid-template-columns:1fr;gap:8px}
+  .order-card-row .order-field{justify-content:flex-start}
+  .order-card-actions{justify-content:flex-end;margin-top:8px}
+  .edit-mode .order-card{padding-left:16px}
+  .order-card-check{position:static;display:block;margin-right:8px}
+  .edit-mode .order-card-check{display:block}
+}
 
 /* DASHBOARD PERIOD */
 .dash-period-wrap{margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -257,6 +279,26 @@ textarea.fc{resize:vertical;min-height:72px}
 .spinner{width:28px;height:28px;border:3px solid var(--green-border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin-right:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* CONFIRM DIALOG */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s ease}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--white);border-radius:var(--radius-lg);width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.confirm-header{padding:24px 24px 16px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:12px}
+.confirm-icon{width:48px;height:48px;border-radius:50%;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--orange);flex-shrink:0}
+.confirm-title{font-size:18px;font-weight:700;color:var(--gray-900)}
+.confirm-body{padding:20px 24px}
+.confirm-message{font-size:15px;color:var(--gray-700);line-height:1.6}
+.confirm-footer{padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;gap:12px;justify-content:flex-end}
+.confirm-btn{padding:10px 20px;border-radius:var(--radius);font-weight:600;font-size:14px;cursor:pointer;transition:.15s;border:none}
+.confirm-btn-cancel{background:var(--gray-100);color:var(--gray-700)}
+.confirm-btn-cancel:hover{background:var(--gray-200)}
+.confirm-btn-confirm{background:var(--green);color:var(--white)}
+.confirm-btn-confirm:hover{background:var(--green-mid)}
+.confirm-btn-danger{background:var(--red);color:var(--white)}
+.confirm-btn-danger:hover{background:#b71c1c}
+
 /* SPLASH / LOADING BAR */
 #splash-screen{position:fixed;inset:0;background:var(--white);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .splash-bar-track{position:fixed;top:0;left:0;right:0;height:3px;background:var(--green-border);z-index:10000}
@@ -272,8 +314,9 @@ textarea.fc{resize:vertical;min-height:72px}
   #main-content{margin-left:0}
   .chart-grid{grid-template-columns:1fr}
   .form-row.cols-2,.form-row.cols-3{grid-template-columns:1fr}
-  .stat-grid{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:1fr 1fr 1fr}
   .sales-tab-nav{left:0}
+  #menu-btn{display:block !important}
 }
 </style>
 </head>
@@ -284,7 +327,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="splash-bar-track"><div class="splash-bar running" id="splash-bar"></div></div>
   <div style="text-align:center">
     <div style="font-size:52px;margin-bottom:14px">🌿</div>
-    <div style="font-size:17px;font-weight:700;color:var(--green)">Herb & Gadget Online</div>
+    <div style="font-size:17px;font-weight:700;color:var(--green)">Nsale Manager</div>
     <div style="font-size:13px;color:var(--gray-500);margin-top:6px">ກຳລັງໂຫຼດ...</div>
   </div>
 </div>
@@ -294,7 +337,7 @@ textarea.fc{resize:vertical;min-height:72px}
   <div class="auth-box">
     <div class="auth-logo">
       <span class="icon">🌿</span>
-      <h1>Herb & Gadget Online</h1>
+      <h1>Nsale Manager</h1>
       <p>ລະບົບຈັດການຍອດຂາຍ & ການເງິນ</p>
     </div>
     <div id="auth-msg" class="auth-msg"></div>
@@ -319,7 +362,7 @@ textarea.fc{resize:vertical;min-height:72px}
 <!-- COMPANY SELECT -->
 <div id="company-screen">
   <div class="company-topbar">
-    <h2>🌿 Herb & Gadget Online</h2>
+    <h2>🌿 Nsale Manager</h2>
     <div class="user-info">
       <span id="comp-user-name"></span>
       <button class="btn-logout-comp" onclick="doLogout()">ອອກ</button>
@@ -343,10 +386,10 @@ textarea.fc{resize:vertical;min-height:72px}
       <div class="nav-section">ຫຼັກ</div>
       <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><i class="fa fa-chart-pie"></i> Dashboard</div>
       <div class="nav-item" data-page="sales" onclick="navigate('sales')"><i class="fa fa-shopping-cart"></i> ຈັດການຍອດຂາຍ</div>
+      <div class="nav-item" data-page="ads" onclick="navigate('ads')"><i class="fa fa-bullhorn"></i> ໂຄສະນາ</div>
       <div class="nav-item" data-page="finance" onclick="navigate('finance')"><i class="fa fa-wallet"></i> ການເງິນ</div>
       <div class="nav-section">ຂໍ້ມູນ</div>
       <div class="nav-item" data-page="products" onclick="navigate('products')"><i class="fa fa-box"></i> ສິນຄ້າ</div>
-      <div class="nav-item" data-page="ads" onclick="navigate('ads')"><i class="fa fa-bullhorn"></i> ໂຄສະນາ</div>
       <div class="nav-item" data-page="reports" onclick="navigate('reports')"><i class="fa fa-chart-bar"></i> ລາຍງານ</div>
       <div class="nav-item" id="nav-settings-toggle" onclick="toggleSettings()"><i class="fa fa-cog"></i> ການຕັ້ງຄ່າ<i class="fa fa-chevron-right nav-arrow" id="settings-arrow"></i></div>
       <div class="nav-submenu" id="settings-submenu" style="display:none">
@@ -392,7 +435,7 @@ textarea.fc{resize:vertical;min-height:72px}
         <div class="stat-grid" id="dash-stats"></div>
         <div class="chart-grid">
           <div class="chart-panel"><div class="chart-title">ຍອດຂາຍ 7 ວັນ</div><div class="chart-wrap"><canvas id="chart-sales7"></canvas></div></div>
-          <div class="chart-panel"><div class="chart-title">ຊ່ອງທາງຂາຍ</div><div class="chart-wrap"><canvas id="chart-channel"></canvas></div></div>
+          <div class="chart-panel"><div class="chart-title">ການເງິນ</div><div class="chart-wrap"><canvas id="chart-channel"></canvas></div></div>
         </div>
         <div class="panel">
           <div class="panel-header"><span class="panel-title">ການຂາຍລ່າສຸດ</span><button class="btn btn-outline btn-sm" onclick="navigate('sales')">ເບິ່ງທັງໝົດ</button></div>
@@ -498,19 +541,30 @@ textarea.fc{resize:vertical;min-height:72px}
       <!-- ADS -->
       <div id="page-ads" class="page">
         <div class="stat-grid" id="ads-stats"></div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">ແຄມເປຍໂຄສະນາ</span>
-            <div class="filter-bar">
+        <div class="chart-grid" style="margin-bottom:20px">
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">ການໃຊ້ໄປໂຄສະນາ</span>
               <div class="period-tabs" id="ads-period">
                 <button class="period-tab active" data-p="7day" onclick="setAdsPeriod('7day')">7 ວັນ</button>
                 <button class="period-tab" data-p="month" onclick="setAdsPeriod('month')">ເດືອນ</button>
                 <button class="period-tab" data-p="year" onclick="setAdsPeriod('year')">ປີ</button>
               </div>
+            </div>
+            <div class="chart-body"><canvas id="chart-ads"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">ແຄມເປຍໂຄສະນາ</span>
+            <div class="filter-bar">
+              <select class="fc" id="ads-prod-filter" onchange="renderAds()" style="width:150px">
+                <option value="">ສິນຄ້າທັງໝົດ</option>
+              </select>
               <button class="btn btn-green" onclick="openAdsModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
             </div>
           </div>
-          <div class="table-wrap"><table><thead><tr><th>ວັນທີ</th><th>ແພລດຟອມ</th><th>ຊື່ແຄມເປຍ</th><th>ສິນຄ້າ</th><th>ງົບ</th><th>ໃຊ້ໄປ</th><th>ລາຍຮັບ</th><th>ROAS</th><th>ສະຖານະ</th><th>ຈັດການ</th></tr></thead><tbody id="ads-tbody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>ວັນທີ</th><th>ງົບ</th><th>ແພລດຟອມ</th><th>ຊື່ແຄມເປຍ</th><th>ສິນຄ້າ</th><th>ROAS</th><th>ຈັດການ</th></tr></thead><tbody id="ads-tbody"></tbody></table></div>
         </div>
       </div>
 
@@ -527,7 +581,7 @@ textarea.fc{resize:vertical;min-height:72px}
         <div class="stat-grid" id="rep-stats"></div>
         <div class="chart-grid">
           <div class="chart-panel"><div class="chart-title">ຍອດຂາຍ & ກຳໄລ</div><div class="chart-wrap"><canvas id="chart-rep-sales"></canvas></div></div>
-          <div class="chart-panel"><div class="chart-title">ຊ່ອງທາງຂາຍ</div><div class="chart-wrap"><canvas id="chart-rep-ch"></canvas></div></div>
+          <div class="chart-panel"><div class="chart-title">ແຂວງ & ເມືອງຂາຍດີ Top 10</div><div class="rep-city-list" id="rep-cities"></div></div>
         </div>
         <div class="panel">
           <div class="panel-header"><span class="panel-title">ສິນຄ້າຂາຍດີ Top 10</span></div>
@@ -582,14 +636,27 @@ textarea.fc{resize:vertical;min-height:72px}
               <div class="combo-list" id="combo-ship"></div>
             </div>
           </div>
-          <div><label>ແຂວງ</label><select class="fc" id="s-prov" onchange="updateDistricts()"><option value="">-- ເລືອກ --</option></select></div>
+          <div><label>ແຂວງ</label>
+            <div class="combo-wrap">
+              <input class="fc" type="text" id="s-prov" placeholder="ພິມ ຫຼື ເລືອກແຂວງ" autocomplete="off" oninput="filterCombo('prov');updateDistricts()" onfocus="openCombo('prov')" onblur="setTimeout(()=>closeCombo('prov'),200)">
+              <div class="combo-list" id="combo-prov"></div>
+            </div>
+          </div>
         </div>
         <div class="form-row cols-2">
-          <div><label>ເມືອງ</label><select class="fc" id="s-dist" onchange="sv('s-branch',''); buildBranchCombo();"><option value="">-- ເລືອກ --</option></select></div>
-          <div><label>ສາຂາ / ທີ່ຢູ່</label>
+          <div><label>ເມືອງ</label>
             <div class="combo-wrap">
-              <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterCombo('branch')" onfocus="openCombo('branch')" onblur="setTimeout(()=>closeCombo('branch'),200)">
-              <div class="combo-list" id="combo-branch"></div>
+              <input class="fc" type="text" id="s-dist" placeholder="ພິມ ຫຼື ເລືອກເມືອງ" autocomplete="off" oninput="filterCombo('dist');sv('s-branch',''); buildBranchCombo()" onfocus="openCombo('dist')" onblur="setTimeout(()=>closeCombo('dist'),200)">
+              <div class="combo-list" id="combo-dist"></div>
+            </div>
+          </div>
+          <div><label>ສາຂາ / ທີ່ຢູ່</label>
+            <div style="display:flex;gap:8px">
+              <div class="combo-wrap" style="flex:1">
+                <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterCombo('branch')" onfocus="openCombo('branch')" onblur="setTimeout(()=>closeCombo('branch'),200)">
+                <div class="combo-list" id="combo-branch"></div>
+              </div>
+              <button class="btn btn-green btn-sm" onclick="openAddBranchFromSale()" style="height:42px;min-width:42px" title="ເພີ່ມສາຂາ">+</button>
             </div>
           </div>
         </div>
@@ -643,7 +710,7 @@ textarea.fc{resize:vertical;min-height:72px}
       </div>
       <div class="form-row"><div><label>ລາຍການ *</label><input class="fc" type="text" id="f-desc" placeholder="ຄຳອະທິບາຍ"></div></div>
       <div class="form-row cols-2">
-        <div><label>ໝວດ</label><select class="fc" id="f-cat"><option>ຍອດຂາຍ</option><option>ຄ່າໂຄສະນາ</option><option>ຄ່າຈ້າງ</option><option>ຄ່າເຊົ່າ</option><option>ຄ່າຂົນສົ່ງ</option><option>ອຸປະກອນ</option><option>ອື່ນໆ</option></select></div>
+        <div><label>ໝວດ</label><div style="display:flex;gap:8px"><select class="fc" id="f-cat"></select><button class="btn btn-outline btn-sm" onclick="openCatModal()" title="จัดการหมวดหมู่"><i class="fa fa-cog"></i></button></div></div>
         <div><label>ຈຳນວນ (₭) *</label><input class="fc" type="number" id="f-amount" placeholder="0"></div>
       </div>
       <div class="form-row"><div><label>ໝາຍເຫດ</label><input class="fc" type="text" id="f-note" placeholder="ໝາຍເຫດ"></div></div>
@@ -651,6 +718,34 @@ textarea.fc{resize:vertical;min-height:72px}
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-finance')">ຍົກເລີກ</button>
       <button class="btn btn-green" onclick="saveFinance()">💾 ບັນທຶກ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirm-dialog">
+  <div class="confirm-box">
+    <div class="confirm-header">
+      <div class="confirm-icon" id="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title">ຢືນຍັນ</div>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-message" id="confirm-message">ທ່ານແນ່ໃຈບໍ?</div>
+    </div>
+    <div class="confirm-footer">
+      <button class="confirm-btn confirm-btn-cancel" id="confirm-cancel">ຍົກເລີກ</button>
+      <button class="confirm-btn confirm-btn-confirm" id="confirm-ok">ຕົກລົງ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-overlay" id="modal-cat">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">จัดการหมวดหมู่</span><button class="modal-close" onclick="closeModal('modal-cat')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div><label>เพิ่มหมวดหมู่ใหม่</label><div style="display:flex;gap:8px"><input class="fc" type="text" id="cat-new" placeholder="ชื่อหมวดหมู่"><button class="btn btn-green" onclick="addCategory()">เพิ่ม</button></div></div></div>
+      <div style="margin-top:16px"><label>หมวดหมู่ทั้งหมด</label><div id="cat-list" style="margin-top:8px;max-height:200px;overflow-y:auto"></div></div>
     </div>
   </div>
 </div>
@@ -690,18 +785,13 @@ textarea.fc{resize:vertical;min-height:72px}
       <input type="hidden" id="ads-id">
       <div class="form-row cols-2">
         <div><label>ວັນທີ *</label><input class="fc" type="date" id="a-date"></div>
-        <div><label>ແພລດຟອມ</label><select class="fc" id="a-platform"><option>Facebook</option><option>TikTok</option><option>Instagram</option><option>Google</option><option>YouTube</option><option>LINE</option></select></div>
+        <div><label>ງົບ (₭)</label><input class="fc" type="number" id="a-budget" placeholder="0"></div>
       </div>
       <div class="form-row cols-2">
+        <div><label>ແພລດຟອມ</label><select class="fc" id="a-platform"><option>Facebook</option><option>TikTok</option></select></div>
         <div><label>ຊື່ແຄມເປຍ *</label><input class="fc" type="text" id="a-name" placeholder="Campaign name"></div>
-        <div><label>ສິນຄ້າ</label><input class="fc" type="text" id="a-prod" placeholder="ສິນຄ້າທີ່ໂຄສະນາ"></div>
       </div>
-      <div class="form-row cols-3">
-        <div><label>ງົບ (₭)</label><input class="fc" type="number" id="a-budget" placeholder="0"></div>
-        <div><label>ໃຊ້ໄປ (₭)</label><input class="fc" type="number" id="a-spent" placeholder="0"></div>
-        <div><label>ລາຍຮັບ (₭)</label><input class="fc" type="number" id="a-revenue" placeholder="0"></div>
-      </div>
-      <div><label>ສະຖານະ</label><select class="fc" id="a-status"><option>ດຳເນີນຢູ່</option><option>ສຳເລັດ</option><option>ຢຸດ</option></select></div>
+      <div><label>ສິນຄ້າ</label><input class="fc" type="text" id="a-prod" placeholder="ສິນຄ້າທີ່ໂຄສະນາ"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-ads')">ຍົກເລີກ</button>
@@ -734,19 +824,29 @@ textarea.fc{resize:vertical;min-height:72px}
     </div>
     <div class="modal-body">
       <input type="hidden" id="branch-id">
-      <input type="hidden" id="branch-ship-id">
+      <div class="form-row">
+        <div>
+          <label>ບໍລິສັດຂົນສົ່ງ *</label>
+          <div class="combo-wrap">
+            <input class="fc" type="text" id="br-ship" placeholder="ພິມ ຫຼື ເລືອກບໍລິສັດຂົນສົ່ງ" autocomplete="off" oninput="filterShipCombo()" onfocus="openCombo('ship')" onblur="setTimeout(()=>closeCombo('ship'),200)">
+            <div class="combo-list" id="combo-ship"></div>
+          </div>
+        </div>
+      </div>
       <div class="form-row cols-2">
         <div>
           <label>ແຂວງ *</label>
-          <select class="fc" id="br-prov" onchange="updateBranchDistricts()">
-            <option value="">-- ເລືອກແຂວງ --</option>
-          </select>
+          <div class="combo-wrap">
+            <input class="fc" type="text" id="br-prov" placeholder="ພິມ ຫຼື ເລືອກແຂວງ" autocomplete="off" oninput="filterBranchCombo('prov');updateBranchDistricts()" onfocus="openBranchCombo('prov')" onblur="setTimeout(()=>closeBranchCombo('prov'),200)">
+            <div class="combo-list" id="combo-br-prov"></div>
+          </div>
         </div>
         <div>
           <label>ເມືອງ</label>
-          <select class="fc" id="br-dist">
-            <option value="">-- ເລືອກເມືອງ --</option>
-          </select>
+          <div class="combo-wrap">
+            <input class="fc" type="text" id="br-dist" placeholder="ພິມ ຫຼື ເລືອກເມືອງ" autocomplete="off" oninput="filterBranchCombo('dist')" onfocus="openBranchCombo('dist')" onblur="setTimeout(()=>closeBranchCombo('dist'),200)">
+            <div class="combo-list" id="combo-br-dist"></div>
+          </div>
         </div>
       </div>
       <div class="form-row">
@@ -810,24 +910,24 @@ let GAS_URL = localStorage.getItem('gas_url') || '';
 //  LAO GEO
 // ══════════════════════════════════════
 const LAO_GEO = {
-  'ນະຄອນຫຼວງວຽງຈັນ':['ຈັນທະບູລີ','ສີສັດຕະນາດ','ໄຊເສດຖາ','ສີໂຄດຕະບອງ','ໄຊທານີ','ນາຊາຍທອງ','ຫາດຊາຍຟອງ','ສັງທອງ','ປາກງື່ມ','ສາຍເສດຖາ'],
-  'ແຂວງວຽງຈັນ':['ພົນໂຮງ','ແມດ','ທຸລະຄົມ','ຫີນເຫີບ','ວັງວຽງ','ໄຊ','ຊະນະຄາມ','ຫີນຊາຍ','ໂພນສະຫວ່າງ','ກາສີ'],
-  'ແຂວງຫຼວງພະບາງ':['ຫຼວງພະບາງ','ຊຽງເງິນ','ນານ','ປາກອູ','ນ້ຳບາກ','ງອຍ','ວຽງຄຳ','ໂພນໄຊ','ຈອມເພດ','ຫົວເມືອງ'],
-  'ແຂວງໄຊຍະບູລີ':['ໄຊຍະບູລີ','ຂອບ','ຮ່ອງ','ງານ','ໄຊສະຖານ','ທົ່ງມີໄຊ','ບໍ່ແຕນ','ປາກລາຍ','ເງິນ','ຄອບ'],
-  'ແຂວງຊຽງຂວາງ':['ໂພນສະຫວັນ','ຄຳ','ໜອງຫ່ານ','ຄູນ','ໄຊຊະນະ','ໂພນໄຊ','ຜາຂາວ','ຜາໄຊ'],
-  'ແຂວງຫົວພັນ':['ຊຳເໜືອ','ຊຳໃຕ້','ວຽງໄຊ','ຮ້ຽມ','ເອດ','ໄຊ','ຊອນ','ກວາດ'],
-  'ແຂວງຫຼວງນ້ຳທາ':['ຫຼວງນ້ຳທາ','ສິງ','ລອງ','ວຽງພູຄາ','ນາເຕ','ນ້ຳຫາ'],
-  'ແຂວງອຸດົມໄຊ':['ໄຊ','ລາ','ນາໝໍ້','ຮຸນ','ແພ','ບຶງ'],
-  'ແຂວງຜົ້ງສາລີ':['ຜົ້ງສາລີ','ບຸນໃຕ້','ໃໝ່','ສອງ','ຄວາ','ສາມພັນ','ບຸນເໜືອ'],
-  'ແຂວງບໍ່ແກ້ວ':['ຫ້ວຍຊາຍ','ຕົ້ນຜຶ້ງ','ງອຍ','ຜາອຸດົມ','ປາກທາ','ພາກທີ'],
-  'ແຂວງໄຊສົມບູນ':['ໄຊສົມບູນ','ທາໂຕ','ລ້ອງຊານ','ຊຳໄໝ'],
-  'ແຂວງບໍລິຄຳໄຊ':['ປາກຊັນ','ທ່າພະບາດ','ໄຊຈຳພອນ','ວຽງທອງ','ຄຳເກີດ','ບໍລິຄັນ'],
-  'ແຂວງຄຳມ່ວນ':['ທ່າແຂກ','ໜອງບົກ','ມະຫາໄຊ','ໄຊບົວທອງ','ຊ່ອງຄອນ','ບົວລະພາ','ກຸ້ມທອງ','ນາກາຍ','ຫີນບູນ'],
-  'ແຂວງສະຫວັນນະເຂດ':['ໄກສອນ','ອຸທຸມພອນ','ຊົນນະບູລີ','ສອງຄອນ','ໄຊບູລີ','ຫີນເຫີບ','ທ່ງ','ຟາໄລ','ວິລະບູລີ','ເຊໂປນ'],
-  'ແຂວງສາລະວັນ':['ສາລະວັນ','ທ່າຕ້ງ','ລະຄອນເພັງ','ຕູ້ມລານ','ວາປີ','ສາມູ','ຄົງ','ລາໂງມ'],
-  'ແຂວງເຊກອງ':['ລະມາມ','ດາກເຈິງ','ຄາລຶມ','ທ່ງ'],
-  'ແຂວງຈຳປາສັກ':['ປາກເຊ','ສານາສົມບູນ','ໂຂງ','ມູນລາປະໂມກ','ສຸຂຸມາ','ຊະນາຊົມ','ໂພນທອງ','ປາດສອງ','ຈຳປາສັກ'],
-  'ແຂວງອັດຕະປື':['ໄຊເສດຖາ','ໂພວົງ','ສາມອ','ສານໄຊ']
+  'ນະຄອນຫຼວງວຽງຈັນ':['ຈັນທະບູລີ','ສີໂຄດຕະບອງ','ໄຊເສດຖາ','ສີສັດຕະນາກ','ນາຊາຍທອງ','ໄຊທານີ','ຫາດຊາຍຟອງ','ສັງທອງ','ປາກງື່ມ'],
+  'ແຂວງຜົ້ງສາລີ':['ບຸນໃຕ້','ຂວາ','ໃໝ່','ຍອດອູ','ຜົ້ງສາລີ','ສຳພັນ','ບຸນເໜືອ'],
+  'ແຂວງຫຼວງນ້ຳທາ':['ຫຼວງນ້ຳທາ','ສິງ','ລອງ','ວຽງພູຄາ','ນາແລ'],
+  'ແຂວງອຸດົມໄຊ':['ໄຊ','ຫຼາ','ນາໝໍ້','ງາ','ແບ່ງ','ຮຸນ','ປາກແບ່ງ'],
+  'ແຂວງບໍ່ແກ້ວ':['ຫ້ວຍຊາຍ','ຕົ້ນ\u200bເຜິ້ງ','ເມິງ','ຜາອຸດົມ','ປາກທາ'],
+  'ແຂວງຫຼວງພະບາງ':['ຫຼວງພະບາງ','ຊຽງເງິນ','ນານ','ປາກອູ','ນ້ຳບາກ','ງອຍ','ປາກແຊງ','ໂພນໄຊ','ຈອມເພັດ','ວຽງຄຳ','ພູຄູນ','ໂພນທອງ'],
+  'ແຂວງຫົວພັນ':['ຊຳເໜືອ','ຊຽງຄໍ້','ຮ້ຽມ','ວຽງໄຊ','ຫົວເມືອງ','ຊຳໃຕ້','ສົບເບົາ','ແອດ','ກວັນ','ຊ່ອນ'],
+  'ແຂວງໄຊຍະບູລີ':['ບໍ່ແຕນ','ຫົງສາ','ແກ່ນທ້າວ','ຄອບ','ເງິນ','ປາກລາຍ','ພຽງ','ທົ່ງມີໄຊ','ໄຊຍະບູລີ','ຊຽງຮ່ອນ','ໄຊສະຖານ'],
+  'ແຂວງຊຽງຂວາງ':['ແປກ (ໂພນສະຫວັນ)','ຄຳ','ໜອງແຮດ','ຄຸນ','ໝອກ','ພູກູດ','ຜາໄຊ'],
+  'ແຂວງວຽງຈັນ':['ເຟືອງ','ຫີນເຫີບ','ກາສີ','ແກ້ວອຸດົມ','ແມດ','ໂພນໂຮງ','ທຸລະຄົມ','ວັງວຽງ','ວຽງຄຳ','ຊະນະຄາມ','ໝື່ນ'],
+  'ແຂວງບໍລິຄຳໄຊ':['ປາກຊັນ','ທ່າພະບາດ','ປາກກະດິງ','ບໍລິຄັນ','ຄຳເກີດ','ວຽງທອງ','ໄຊຈຳພອນ'],
+  'ແຂວງຄຳມ່ວນ':['ທ່າແຂກ','ມະຫາໄຊ','ໜອງບົກ','ຫີນບູນ','ຍົມມະລາດ','ບົວລະພາ','ນາກາຍ','ເຊບັ້ງໄຟ','ໄຊບົວທອງ','ຄູນຄຳ'],
+  'ແຂວງສະຫວັນນະເຂດ':['ໄກສອນ ພົມວິຫານ','ອາດສະພັງທອງ','ພີນ','ເຊໂປນ','ນອງ','ທ່າປາງທອງ','ສອງຄອນ','ຈຳພອນ','ຊົນນະບູລີ','ໄຊບູລີ','ວິລະບູລີ','ອາດສະພອນ','ໄຊພູທອງ','ພະລານໄຊ'],
+  'ແຂວງສາລະວັນ':['ສາລະວັນ','ຕຸ້ມລານ','ລະຄອນເພັງ','ວາປີ','ຄົງເຊໂດນ','ເລົ່າງາມ','ຕະໂອ້ຍ','ສະໝ້ວຍ'],
+  'ແຂວງເຊກອງ':['ທ່າແຕງ','ລະມາມ','ກະລຶມ','ດັກຈຶງ'],
+  'ແຂວງຈຳປາສັກ':['ປາກເຊ','ຊະນະສົມບູນ','ບາຈຽງຈະເລີນສຸກ','ປາກຊ່ອງ','ປະທຸມພອນ','ໂພນທອງ','ຈຳປາສັກ','ສຸຂຸມາ','ມູນລະປະໂມກ','ໂຂງ'],
+  'ແຂວງອັດຕະປື':['ໄຊເຊດຖາ','ສາມັກຄີໄຊ','ສະໜາມໄຊ','ຊານໄຊ','ໄຊພູວົງ'],
+  'ແຂວງໄຊສົມບູນ':['ອະນຸວົງ','ລ້ອງແຈ້ງ','ລ້ອງຊານ','ຮົ່ມ','ທ່າໂທມ']
 };
 
 // ══════════════════════════════════════
@@ -939,6 +1039,39 @@ async function createCompany(){
 }
 
 // ══════════════════════════════════════
+//  CUSTOM CONFIRM DIALOG
+// ══════════════════════════════════════
+let confirmResolve=null;
+function showConfirm(options){
+  const{title='ຢືນຍັນ',message='ທ່ານແນ່ໃຈບໍ?',icon='⚠️',confirmText='ຕົກລົງ',cancelText='ຍົກເລີກ',type='normal'}=options;
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-message').textContent=message;
+  document.getElementById('confirm-icon').textContent=icon;
+  document.getElementById('confirm-ok').textContent=confirmText;
+  document.getElementById('confirm-cancel').textContent=cancelText;
+  const okBtn=document.getElementById('confirm-ok');
+  okBtn.className='confirm-btn '+(type==='danger'?'confirm-btn-danger':'confirm-btn-confirm');
+  const overlay=document.getElementById('confirm-dialog');
+  overlay.classList.add('open');
+  return new Promise((resolve)=>{
+    confirmResolve=resolve;
+  });
+}
+function closeConfirm(result){
+  const overlay=document.getElementById('confirm-dialog');
+  overlay.classList.remove('open');
+  if(confirmResolve){
+    confirmResolve(result);
+    confirmResolve=null;
+  }
+}
+document.getElementById('confirm-cancel').onclick=()=>closeConfirm(false);
+document.getElementById('confirm-ok').onclick=()=>closeConfirm(true);
+document.getElementById('confirm-dialog').onclick=(e)=>{
+  if(e.target.id==='confirm-dialog') closeConfirm(false);
+};
+
+// ══════════════════════════════════════
 //  LOAD DATA
 // ══════════════════════════════════════
 async function loadData(){
@@ -966,11 +1099,22 @@ function setupApp(){
   document.getElementById('sb-company-name').textContent=c.name;
   document.getElementById('sb-role').textContent=roleLabel(S.role);
   document.getElementById('sb-user-name').textContent=u.name||u.email.split('@')[0];
-  document.getElementById('sb-user-email').textContent=u.email||S.user.email;
+  document.getElementById('sb-user-email').textContent=maskEmail(u.email||S.user.email);
   document.getElementById('sb-avatar').textContent=(u.name||u.email)[0].toUpperCase();
-  document.getElementById('sb-logo').textContent=c.name[0]||'🌿';
+  const logoEl=document.getElementById('sb-logo');
+  if(c.logo){logoEl.innerHTML=`<img src="${c.logo}">`;}
+  else{logoEl.textContent=c.name[0]||'🌿';}
   populateProvinces();
   if(window.innerWidth<=768) document.getElementById('menu-btn').style.display='block';
+}
+function maskEmail(email){
+  if(!email||!email.includes('@')) return email;
+  const [local,domain]=email.split('@');
+  if(local.length<=3){return email;}
+  const firstTwo=local.slice(0,2);
+  const lastChar=local.slice(-1);
+  const maskedMiddle='*'.repeat(local.length-3);
+  return `${firstTwo}${maskedMiddle}${lastChar}@${domain}`;
 }
 let _realtimeChannel=null;
 function setupRealtime(){
@@ -1080,16 +1224,30 @@ function getDashData(){
   else if(S.dashPeriod==='year'){sales=sales.filter(s=>s.date.startsWith(yr));fin=fin.filter(f=>f.date.startsWith(yr));}
   return {sales,fin};
 }
+function getDashPeriodAds(){
+  const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
+  let ads=S.db.ads;
+  if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);ads=ads.filter(a=>new Date(a.date)>=d7);}
+  else if(S.dashPeriod==='month') ads=ads.filter(a=>a.date.startsWith(ym));
+  else if(S.dashPeriod==='year') ads=ads.filter(a=>a.date.startsWith(yr));
+  return ads;
+}
 function renderDash(){
   const {sales,fin}=getDashData();
   const rev=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
   const prof=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
-  const exp=fin.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
+  const finExp=fin.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
+  const adsBudget=getDashPeriodAds().reduce((a,x)=>a+(x.budget||0),0);
+  const exp=finExp+adsBudget;
   const pending=S.db.sales.filter(s=>s.status==='ລໍຖ້າ'||s.status==='ຈັດສົ່ງ').length;
+  const totalOrders=S.db.sales.length;
+  const canceledOrders=S.db.sales.filter(s=>s.status==='ຍົກເລີກ').length;
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ຍອດຂາຍ (ສຳເລັດ)</div><div class="stat-value">${fmt(rev)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລລວມ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">ລໍຖ້າ / ຈັດສົ່ງ</div><div class="stat-value">${pending}</div><div class="stat-sub">ລາຍການ</div></div>
+    <div class="stat-card blue"><span class="stat-icon">📦</span><div class="stat-label">ຍອດ order ລວມທັງໝົດ</div><div class="stat-value">${totalOrders}</div><div class="stat-sub">ລາຍການ</div></div>
+    <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">ລວມ order ທີ່ຖືກຍົກເລີກ (ຕີກັບ)</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value">${fmt(exp)}</div><div class="stat-sub">₭</div></div>`;
   const tbody=document.getElementById('dash-recent');
   const rec=sales.slice(0,10);
@@ -1106,9 +1264,15 @@ function draw7Days(filteredSales){
 function drawChannel(filteredSales){
   const ctx=document.getElementById('chart-channel'); if(!ctx) return;
   const src=filteredSales||S.db.sales;
-  const ch={};
-  src.filter(s=>s.status==='ສຳເລັດ').forEach(s=>{const c=s.channel||'ອື່ນໆ';ch[c]=(ch[c]||0)+(s.qty*s.price-(s.discount||0));});
-  dc('channel'); charts['channel']=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(ch),datasets:[{data:Object.values(ch),backgroundColor:['#4caf50','#2196f3','#ff9800','#9c27b0','#f44336','#009688','#ffd600']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  const {fin}=getDashData();
+  const rev=src.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
+  const finExp=fin.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
+  const adsBudget=getDashPeriodAds().reduce((a,x)=>a+(x.budget||0),0);
+  const totalExp=finExp+adsBudget;
+  const netProfit=rev-totalExp;
+  const total=rev+totalExp;
+  const netPct=rev>0?((netProfit/rev)*100).toFixed(1):0;
+  dc('channel'); charts['channel']=new Chart(ctx,{type:'doughnut',data:{labels:['ລາຍຮັບ','ລາຍຈ່າຍ'],datasets:[{data:[rev,totalExp],backgroundColor:['#4caf50','#f44336']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Noto Sans Lao',size:12,weight:'bold'},color:(ctx)=>ctx.index===0?'#4caf50':'#f44336',generateLabels:(chart)=>{const ds=chart.data.datasets[0];const sum=ds.data.reduce((a,b)=>a+b,0);return chart.data.labels.map((label,i)=>{const pct=sum>0?((ds.data[i]/sum)*100).toFixed(1):'0.0';return{text:`${label} ${pct}%`,fillStyle:ds.backgroundColor[i],strokeStyle:ds.backgroundColor[i],lineWidth:0,hidden:!chart.getDataVisibility(i),index:i};});}}},datalabels:{color:'#fff',font:{family:'Noto Sans Lao',weight:'bold',size:14},formatter:(val,ctx)=>{const sum=ctx.dataset.data.reduce((a,b)=>a+b,0);return sum>0?((val/sum)*100).toFixed(1)+'%':'0%';}},title:{display:true,text:`ກຳໄລສຸດທິ: ${netProfit>=0?'+':''}${netPct}% (${fmt(netProfit)} ₭)`,font:{family:'Noto Sans Lao',size:14,weight:'bold'},color:netProfit>=0?'#4caf50':'#f44336',padding:10}}}});
 }
 
 // ══════════════════════════════════════
@@ -1161,15 +1325,19 @@ function renderPendingOrders(){
     return `<div class="order-card" id="ocard-${s.id}">
       <input type="checkbox" class="order-card-check" id="chk-${s.id}" onchange="updatePendingCount()">
       <div class="order-card-row">
-        <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:11px"></i> ${fmtDate(s.date)}</div>
-        <div class="order-field" style="flex:1;min-width:120px"><strong>${esc(s.customer_name||'—')}</strong></div>
-        <div class="order-field">${s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500)"></i> ${esc(s.customer_phone)}`:''}</div>
-        <div class="order-field highlight" style="flex:1;min-width:140px"><i class="fa fa-box" style="font-size:11px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
-        <div class="order-field"><strong style="color:var(--green-dark)">${fmt(tot)} ₭</strong></div>
+        <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:12px"></i> ${fmtDate(s.date)}</div>
+        <div class="order-field"><strong style="font-size:14px">${esc(s.customer_name||'—')}</strong></div>
+        <div class="order-field" style="font-weight:700;font-size:15px;color:var(--blue)">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px"></i> ${esc(s.customer_phone)}`:'—'}</div>
+        <div class="order-field highlight"><i class="fa fa-box" style="font-size:12px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
+        <div class="order-field"><strong style="color:var(--green-dark);font-size:15px">${fmt(tot)} ₭</strong></div>
+        <div class="order-card-actions">
+          <button class="btn-icon edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ"><i class="fa fa-pen"></i></button>
+          <button class="btn-icon del" onclick="delSale('${s.id}')" title="ລຶບ"><i class="fa fa-trash"></i></button>
+        </div>
       </div>
-      ${shipLine.length?`<div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      ${shipLine.length?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         ${s.shipping_company?`<span class="order-shipping-tag"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
-        ${shipLine.length?`<span style="font-size:12px;color:var(--gray-700)"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:11px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
+        ${shipLine.length?`<span style="font-size:13px;color:var(--gray-700);font-weight:600"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
       </div>`:''}
     </div>`;
   }).join('');
@@ -1299,7 +1467,14 @@ function renderSalesTable(){
     const tot=s.qty*s.price-(s.discount||0), pr=s.qty*(s.price-s.cost)-(s.discount||0);
     return `<tr><td><input type="checkbox" class="sale-chk" data-id="${s.id}" onchange="updateSalesBulkBar()" style="cursor:pointer"></td>
     <td style="color:var(--gray-500)">${i+1}</td><td>${fmtDate(s.date)}</td><td style="font-weight:700">${esc(s.product_name||'-')}</td>
-    <td>${esc(s.customer_name||'-')}<br><small style="color:var(--gray-500)">${s.customer_phone||''}</small></td>
+    <td>
+      <div style="font-weight:600;font-size:14px">${esc(s.customer_name||'-')}</div>
+      <div style="font-weight:700;font-size:15px;color:var(--blue);margin-top:4px">${s.customer_phone||'-'}</div>
+      <div style="font-size:13px;color:var(--gray-700);margin-top:2px">
+        ${s.district?esc(s.district):''}${s.district && s.province?', ':''}${s.province?esc(s.province):''}
+      </div>
+      <div style="font-size:12px;color:var(--gray-500)">${s.branch?esc(s.branch):''}</div>
+    </td>
     <td style="text-align:center">${s.qty}</td><td>${fmt(s.price)} ₭</td>
     <td style="color:var(--orange)">${s.discount?fmt(s.discount)+' ₭':'-'}</td>
     <td style="font-weight:700">${fmt(tot)} ₭</td>
@@ -1333,7 +1508,15 @@ function clearSalesSelection(){
 async function bulkDeleteSales(){
   const ids=[...document.querySelectorAll('.sale-chk:checked')].map(c=>c.dataset.id);
   if(!ids.length) return;
-  if(!confirm(`ລົບ ${ids.length} ລາຍການທີ່ເລືອກ?\nການກະທຳນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້`)) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:`ລົບ ${ids.length} ລາຍການທີ່ເລືອກ?\nການກະທຳນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້`,
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('sales').delete().in('id',ids);
   if(error){toast(error.message,'error');return;}
   S.db.sales=S.db.sales.filter(s=>!ids.includes(s.id));
@@ -1347,7 +1530,7 @@ function openSaleModal(){
   sv('s-date',today()); sv('s-cname',''); sv('s-cphone',''); sv('s-ship','');
   populateProvinces(); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
   sv('s-prod',''); sv('s-qty',1); sv('s-price',''); sv('s-cost',''); sv('s-disc',0); sv('s-status','ລໍຖ້າ'); sv('s-note','');
-  buildShipCombo(); buildBranchCombo(); buildProdCombo(); calcTotal();
+  buildShipCombo(); buildProvCombo(); buildDistCombo(); buildBranchCombo(); buildProdCombo(); calcTotal();
   openModal('modal-sale');
 }
 function editSale(id){
@@ -1363,7 +1546,7 @@ function editSale(id){
   sv('s-branch',s.branch||''); sv('s-prod',s.product_name||'');
   sv('s-qty',s.qty); sv('s-price',s.price); sv('s-cost',s.cost);
   sv('s-disc',s.discount||0); sv('s-status',s.status); sv('s-note',s.note||'');
-  buildShipCombo(); buildBranchCombo(); buildProdCombo(); calcTotal(); openModal('modal-sale');
+  buildShipCombo(); buildProvCombo(); buildDistCombo(); buildBranchCombo(); buildProdCombo(); calcTotal(); openModal('modal-sale');
 }
 async function saveSale(){
   const date=v('s-date'),prod=v('s-prod'),qty=+v('s-qty')||1,price=+v('s-price')||0,cost=+v('s-cost')||0;
@@ -1391,7 +1574,15 @@ async function saveSale(){
   closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesPage();
 }
 async function delSale(id){
-  if(!confirm('ລຶບລາຍການນີ້?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບລາຍການນີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('sales').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.sales=S.db.sales.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderSalesPage();
@@ -1412,13 +1603,8 @@ function renderFin(){
   let data=S.db.finance;
   if(S.finPeriod==='month') data=data.filter(f=>f.date.startsWith(ym));
   else if(S.finPeriod==='year') data=data.filter(f=>f.date.startsWith(yr));
-  const inc=data.filter(f=>f.type==='ລາຍຮັບ').reduce((a,f)=>a+f.amount,0);
-  const exp=data.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
-  const net=inc-exp;
-  document.getElementById('fin-stats').innerHTML=`
-    <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ລາຍຮັບ</div><div class="stat-value" style="color:var(--green)">${fmt(inc)} ₭</div></div>
-    <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value" style="color:var(--red)">${fmt(exp)} ₭</div></div>
-    <div class="stat-card ${net>=0?'':'red'}"><span class="stat-icon">${net>=0?'📈':'📉'}</span><div class="stat-label">ກຳໄລ/ຂາດທຶນ</div><div class="stat-value" style="color:${net>=0?'var(--green)':'var(--red)'}">${fmt(net)} ₭</div></div>`;
+  const finExp=data.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
+  document.getElementById('fin-stats').innerHTML=`<div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value" style="color:var(--red)">${fmt(finExp)} ₭</div></div>`;
   const tb=document.getElementById('fin-tbody');
   if(!data.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><i class="fa fa-wallet"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
   tb.innerHTML=data.map(f=>`<tr><td>${fmtDate(f.date)}</td><td style="font-weight:600">${esc(f.description||'-')}</td>
@@ -1428,9 +1614,66 @@ function renderFin(){
     <td style="color:var(--gray-500)">${esc(f.note||'-')}</td>
     <td><button class="btn-icon edit" onclick="editFin('${f.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delFin('${f.id}')"><i class="fa fa-trash"></i></button></td></tr>`).join('');
 }
-function openFinanceModal(){sv('fin-id','');document.getElementById('fin-title').textContent='ເພີ່ມລາຍການ';sv('f-date',today());sv('f-type','ລາຍຮັບ');sv('f-desc','');sv('f-cat','ຍອດຂາຍ');sv('f-amount','');sv('f-note','');openModal('modal-finance');}
+function getCategories(){
+  const stored=localStorage.getItem('finance_categories');
+  if(stored) return JSON.parse(stored);
+  const defaultCats=['ຍອດຂາຍ','ຄ່າໂຄສະນາ','ຄ່າຈ້າງ','ຄ່າເຊົ່າ','ຄ່າຂົນສົ່ງ','ອຸປະກອນ','ອື່ນໆ'];
+  localStorage.setItem('finance_categories',JSON.stringify(defaultCats));
+  return defaultCats;
+}
+function saveCategories(cats){
+  localStorage.setItem('finance_categories',JSON.stringify(cats));
+}
+function loadCatDropdown(){
+  const cats=getCategories();
+  const sel=document.getElementById('f-cat');
+  const currentVal=sel.value;
+  sel.innerHTML=cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  if(cats.includes(currentVal)) sel.value=currentVal;
+}
+function openCatModal(){
+  renderCatList();
+  openModal('modal-cat');
+}
+function renderCatList(){
+  const cats=getCategories();
+  const el=document.getElementById('cat-list');
+  el.innerHTML=cats.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--gray-200)"><span>${esc(c)}</span><button class="btn-icon del" onclick="delCategory(${i})"><i class="fa fa-trash"></i></button></div>`).join('');
+}
+function addCategory(){
+  const input=document.getElementById('cat-new');
+  const name=input.value.trim();
+  if(!name){toast('ກະລຸນາປ້ອນຊື່หมวดหมู่','error');return;}
+  const cats=getCategories();
+  if(cats.includes(name)){toast('หมวดหมู่นี้มีอยู่แล้ว','error');return;}
+  cats.push(name);
+  saveCategories(cats);
+  input.value='';
+  renderCatList();
+  loadCatDropdown();
+  toast('เพิ่มหมวดหมู่สำเร็จ','success');
+}
+async function delCategory(index){
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລົບໝວດນີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
+  const cats=getCategories();
+  cats.splice(index,1);
+  saveCategories(cats);
+  renderCatList();
+  loadCatDropdown();
+  toast('ลบหมวดหมู่สำเร็จ','success');
+}
+function openFinanceModal(){loadCatDropdown();sv('fin-id','');document.getElementById('fin-title').textContent='ເພີ່ມລາຍການ';sv('f-date',today());sv('f-type','ລາຍຮັບ');sv('f-desc','');sv('f-cat','ຍອດຂາຍ');sv('f-amount','');sv('f-note','');openModal('modal-finance');}
 function editFin(id){
   const f=S.db.finance.find(x=>x.id===id); if(!f) return;
+  loadCatDropdown();
   document.getElementById('fin-title').textContent='ແກ້ໄຂລາຍການ';
   sv('fin-id',id);sv('f-date',f.date);sv('f-type',f.type);sv('f-desc',f.description);sv('f-cat',f.category||'');sv('f-amount',f.amount);sv('f-note',f.note||'');
   openModal('modal-finance');
@@ -1446,7 +1689,15 @@ async function saveFinance(){
   closeModal('modal-finance'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderFin();
 }
 async function delFin(id){
-  if(!confirm('ລຶບ?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບລາຍການນີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('finance').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.finance=S.db.finance.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderFin();
@@ -1490,7 +1741,15 @@ async function saveProduct(){
   closeModal('modal-product'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderProductsTable();
 }
 async function delProduct(id){
-  if(!confirm('ລຶບສິນຄ້ານີ້?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບສິນຄ້ານີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('products').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.products=S.db.products.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderProductsTable();
@@ -1509,37 +1768,55 @@ function getAdsPeriodData(){
   return data;
 }
 function renderAds(){
-  const data=getAdsPeriodData();
-  const spent=data.reduce((a,x)=>a+x.spent,0), rev=data.reduce((a,x)=>a+x.revenue,0);
-  const roas=spent>0?(rev/spent).toFixed(2):0;
-  document.getElementById('ads-stats').innerHTML=`
-    <div class="stat-card blue"><span class="stat-icon">💰</span><div class="stat-label">ໃຊ້ໄປ</div><div class="stat-value">${fmt(spent)} ₭</div></div>
-    <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ລາຍຮັບ</div><div class="stat-value">${fmt(rev)} ₭</div></div>
-    <div class="stat-card purple"><span class="stat-icon">🎯</span><div class="stat-label">ROAS ສະເລ່ຍ</div><div class="stat-value">${roas}x</div></div>`;
+  const periodData=getAdsPeriodData();
+  const prodFilter=v('ads-prod-filter');
+  const data=prodFilter?periodData.filter(a=>a.product_name===prodFilter):periodData;
+  const budget=periodData.reduce((a,x)=>a+(x.budget||0),0);
+  document.getElementById('ads-stats').innerHTML=`<div class="stat-card purple"><span class="stat-icon">💰</span><div class="stat-label">ງົບໂຄສະນາລວມ</div><div class="stat-value">${fmt(budget)} ₭</div></div>`;
   const tb=document.getElementById('ads-tbody');
-  if(!data.length){tb.innerHTML='<tr><td colspan="10"><div class="empty"><i class="fa fa-bullhorn"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
+  if(!data.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><i class="fa fa-bullhorn"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
   tb.innerHTML=data.map(a=>{
     const r=a.spent>0?(a.revenue/a.spent).toFixed(2):0;
     return `<tr><td>${fmtDate(a.date)}</td>
+    <td>${fmt(a.budget)} ₭</td>
     <td><span class="badge ${a.platform==='Facebook'?'badge-blue':a.platform==='TikTok'?'badge-red':'badge-gray'}">${a.platform}</span></td>
     <td style="font-weight:600">${esc(a.name)}</td><td>${esc(a.product_name||'-')}</td>
-    <td>${fmt(a.budget)} ₭</td><td>${fmt(a.spent)} ₭</td><td>${fmt(a.revenue)} ₭</td>
     <td style="font-weight:700;color:${r>=2?'var(--green)':'var(--orange)'}">${r}x</td>
-    <td>${badge(a.status)}</td>
     <td><button class="btn-icon edit" onclick="editAds('${a.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delAds('${a.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
   }).join('');
+  const pf=document.getElementById('ads-prod-filter');
+  if(pf){
+    const prods=[...new Set(S.db.ads.map(a=>a.product_name).filter(Boolean))];
+    pf.innerHTML='<option value="">ສິນຄ້າທັງໝົດ</option>'+prods.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  }
+  drawAdsChart(data);
 }
-function openAdsModal(){sv('ads-id','');document.getElementById('ads-title').textContent='ເພີ່ມແຄມເປຍ';sv('a-date',today());sv('a-platform','Facebook');sv('a-name','');sv('a-prod','');sv('a-budget','');sv('a-spent','');sv('a-revenue','');sv('a-status','ດຳເນີນຢູ່');openModal('modal-ads');}
+function drawAdsChart(data){
+  const ctx=document.getElementById('chart-ads'); if(!ctx) return;
+  const L=[],D=[];
+  if(S.adsPeriod==='7day'){
+    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().slice(0,10);L.push(ds.slice(5));D.push(data.filter(a=>a.date===ds).reduce((a,x)=>a+x.budget,0));}
+  }else if(S.adsPeriod==='month'){
+    const now=new Date(), ym=now.toISOString().slice(0,7);
+    for(let i=1;i<=31;i++){const d=`${ym}-${String(i).padStart(2,'0')}`;L.push(String(i));D.push(data.filter(a=>a.date===d).reduce((a,x)=>a+x.budget,0));}
+  }else if(S.adsPeriod==='year'){
+    const now=new Date(), yr=String(now.getFullYear());
+    const months=['ມ.ກ','ກ.ພ','ມ.ນ','ມ.ສ','ພ.ພ','ມ.ກ','ກ.ຮ','ສ.ຄ','ກ.ຍ','ຕ.ລ','ພ.ຨ','ທ.ຫ'];
+    months.forEach((m,i)=>{const d=`${yr}-${String(i+1).padStart(2,'0')}`;L.push(m);D.push(data.filter(a=>a.date.startsWith(d)).reduce((a,x)=>a+x.budget,0));});
+  }
+  dc('ads'); charts['ads']=new Chart(ctx,{type:'line',data:{labels:L,datasets:[{label:'ງົບ',data:D,backgroundColor:'rgba(156,39,176,.2)',borderColor:'#9c27b0',borderWidth:2,fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v)}}}}});
+}
+function openAdsModal(){sv('ads-id','');document.getElementById('ads-title').textContent='ເພີ່ມແຄມເປຍ';sv('a-date',today());sv('a-budget','');sv('a-platform','Facebook');sv('a-name','');sv('a-prod','');openModal('modal-ads');}
 function editAds(id){
   const a=S.db.ads.find(x=>x.id===id); if(!a) return;
   document.getElementById('ads-title').textContent='ແກ້ໄຂ';
-  sv('ads-id',id);sv('a-date',a.date);sv('a-platform',a.platform);sv('a-name',a.name);sv('a-prod',a.product_name||'');sv('a-budget',a.budget);sv('a-spent',a.spent);sv('a-revenue',a.revenue);sv('a-status',a.status);
+  sv('ads-id',id);sv('a-date',a.date);sv('a-budget',a.budget);sv('a-platform',a.platform);sv('a-name',a.name);sv('a-prod',a.product_name||'');
   openModal('modal-ads');
 }
 async function saveAds(){
   const date=v('a-date'),name=v('a-name');
   if(!date||!name){toast('ກະລຸນາປ້ອນຂໍ້ມູນ','error');return;}
-  const pl={company_id:S.company.id,date,platform:v('a-platform'),name,product_name:v('a-prod')||null,budget:+v('a-budget')||0,spent:+v('a-spent')||0,revenue:+v('a-revenue')||0,status:v('a-status')};
+  const pl={company_id:S.company.id,date,platform:v('a-platform'),name,product_name:v('a-prod')||null,budget:+v('a-budget')||0};
   const eid=v('ads-id'); let err;
   if(eid){const{error}=await sb.from('ads').update(pl).eq('id',eid);err=error;if(!err)S.db.ads=S.db.ads.map(x=>x.id===eid?{...x,...pl}:x);}
   else{const{data,error}=await sb.from('ads').insert(pl).select().single();err=error;if(!err)S.db.ads.unshift(data);}
@@ -1547,7 +1824,15 @@ async function saveAds(){
   closeModal('modal-ads'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderAds();
 }
 async function delAds(id){
-  if(!confirm('ລຶບ?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບໂຄສະນານີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('ads').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.ads=S.db.ads.filter(x=>x.id!==id); toast('ລຶບສຳເລັດ','success'); renderAds();
@@ -1576,7 +1861,7 @@ function renderReports(){
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)} ₭</div></div>
     <div class="stat-card orange"><span class="stat-icon">📦</span><div class="stat-label">ຈຳນວນ</div><div class="stat-value">${qty} <span style="font-size:14px">ຊິ້ນ</span></div></div>
     <div class="stat-card blue"><span class="stat-icon">%</span><div class="stat-label">Margin</div><div class="stat-value">${margin}%</div></div>`;
-  drawRepSales(data); drawRepChannel(data);
+  drawRepSales(data); renderRepCities(data);
   // Top products
   const pm={};
   data.forEach(s=>{const k=s.product_name||'ອື່ນໆ';if(!pm[k])pm[k]={qty:0,rev:0,prof:0};pm[k].qty+=s.qty;pm[k].rev+=s.qty*s.price-(s.discount||0);pm[k].prof+=s.qty*(s.price-s.cost)-(s.discount||0);});
@@ -1596,12 +1881,35 @@ function drawRepSales(data){
   dc('rep-sales');
   charts['rep-sales']=new Chart(ctx,{type:'line',data:{labels:L,datasets:[{label:'ຍອດຂາຍ',data:R,borderColor:'#4caf50',backgroundColor:'rgba(76,175,80,.1)',tension:.3,fill:true},{label:'ກຳໄລ',data:P,borderColor:'#1565c0',backgroundColor:'rgba(21,101,192,.06)',tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v)}}}}});
 }
-function drawRepChannel(data){
-  const ctx=document.getElementById('chart-rep-ch'); if(!ctx) return;
-  const ch={};
-  data.forEach(s=>{const c=s.channel||'ອື່ນໆ';ch[c]=(ch[c]||0)+(s.qty*s.price-(s.discount||0));});
+function getSaleLocation(s){
+  const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
+  const br=sc?S.db.branches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
+  const prov=br?br.province:(s.province||'');
+  const dist=br?br.district:(s.district||'');
+  const city=dist||prov||'ບໍ່ລະບຸ';
+  const key=`${prov||'—'}|${dist||'—'}`;
+  return {key,city,prov:prov||'—'};
+}
+function renderRepCities(data){
+  const el=document.getElementById('rep-cities'); if(!el) return;
   dc('rep-ch');
-  charts['rep-ch']=new Chart(ctx,{type:'pie',data:{labels:Object.keys(ch),datasets:[{data:Object.values(ch),backgroundColor:['#4caf50','#2196f3','#ff9800','#9c27b0','#f44336','#009688','#ffd600']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  const totalOrders=data.length;
+  const cm={};
+  data.forEach(s=>{
+    const {key,city,prov}=getSaleLocation(s);
+    if(!cm[key])cm[key]={city,prov,count:0};
+    cm[key].count+=1;
+  });
+  const top=Object.values(cm).sort((a,b)=>b.count-a.count).slice(0,10);
+  el.innerHTML=top.length?top.map((c,i)=>{
+    const pct=totalOrders>0?((c.count/totalOrders)*100).toFixed(1):'0.0';
+    return `<div class="rep-city-row">
+      <span class="rep-city-rank">${i+1}</span>
+      <div class="rep-city-name">${esc(c.city)}<div class="rep-city-prov">${esc(c.prov)}</div></div>
+      <span class="rep-city-rev">${c.count} order</span>
+      <span class="rep-city-pct">${pct}%</span>
+    </div>`;
+  }).join(''):'<div class="empty" style="padding:40px 0"><i class="fa fa-map-marker-alt"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div>';
 }
 
 // ══════════════════════════════════════
@@ -1614,11 +1922,19 @@ function renderCoInfo(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px">
       <div style="display:flex;flex-direction:column;gap:20px">
         <div class="panel">
-          <div class="panel-header"><span class="panel-title">ຂໍ້ມູນບໍລິສັດ</span></div>
+          <div class="panel-header"><span class="panel-title">ຂໍ້ມູນບໍລິສັດ</span><button class="btn btn-outline btn-sm" id="btn-edit-co" onclick="toggleCoEdit()"><i class="fa fa-pen"></i> ແກ້ໄຂ</button></div>
           <div class="panel-body">
-            <div class="form-group"><label>ຊື່ *</label><input class="fc" id="co-name" value="${esc(S.company.name)}"></div>
-            <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(GAS_URL)}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
-            <button class="btn btn-green" onclick="saveCoSettings()">💾 ບັນທຶກ</button>
+            <div id="co-display-mode">
+              <div class="form-group"><label>Logo</label><div class="sidebar-logo" style="width:56px;height:56px;font-size:28px">${S.company.logo?`<img src="${S.company.logo}">`:esc(S.company.name[0]||'🌿')}</div></div>
+              <div class="form-group"><label>ຊື່</label><div style="font-weight:600">${esc(S.company.name)}</div></div>
+              <div class="form-group"><label>Google Apps Script URL</label><div style="font-size:13px;color:var(--gray-700)">${esc(GAS_URL)||'—'}</div></div>
+            </div>
+            <div id="co-edit-mode" style="display:none">
+              <div class="form-group"><label>Logo</label><div style="display:flex;align-items:center;gap:12px"><div class="sidebar-logo" style="width:56px;height:56px;font-size:28px">${S.company.logo?`<img src="${S.company.logo}">`:esc(S.company.name[0]||'🌿')}</div><div><input type="file" id="co-logo" accept="image/*" style="display:none" onchange="uploadCompanyLogo(this)"><button class="btn btn-outline btn-sm" id="btn-upload-logo" onclick="document.getElementById('co-logo').click()"><i class="fa fa-upload"></i> ອັບໂຫຼດ</button></div></div><div id="logo-progress" style="display:none;margin-top:8px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden"><div id="logo-progress-bar" style="height:100%;background:var(--green);width:0%;transition:width 0.2s"></div></div><span id="logo-progress-text" style="font-size:11px;color:var(--gray-500)">0%</span></div></div></div>
+              <div class="form-group"><label>ຊື່ *</label><input class="fc" id="co-name" value="${esc(S.company.name)}"></div>
+              <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(GAS_URL)}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
+              <div style="display:flex;gap:8px"><button class="btn btn-green" onclick="saveCoSettings()">💾 ບັນທຶກ</button><button class="btn btn-outline" onclick="toggleCoEdit()">ຍົກເລີກ</button></div>
+            </div>
           </div>
         </div>
         <div class="panel">
@@ -1666,28 +1982,33 @@ function renderCoShipping(){
 }
 function renderShippingWithBranches(){
   if(!S.db.shipCos.length) return '<p style="color:var(--gray-500);font-size:13px">ຍັງບໍ່ມີ — ກົດ "+ ເພີ່ມບໍລິສັດ"</p>';
-  return S.db.shipCos.map(sc=>{
+  return S.db.shipCos.map((sc,scIdx)=>{
     const branches=S.db.branches.filter(b=>b.shipping_company_id===sc.id);
     const bid='sc-branches-'+sc.id;
     const cnt=branches.length;
     // Level 1: group by province
     const byProv={};
     branches.forEach(b=>{const p=b.province||'ບໍ່ລະບຸ';if(!byProv[p])byProv[p]=[];byProv[p].push(b);});
-    const branchHTML=Object.keys(byProv).sort().map(prov=>{
-      const pid='prov-'+sc.id+'-'+prov.replace(/\W/g,'_');
+    const branchHTML=Object.keys(byProv).sort().map((prov,provIdx)=>{
+      const pid='prov-'+scIdx+'-'+provIdx;
       const provBranches=byProv[prov];
+      // Helper: check if name already has prefix
+      const provDisp=prov.startsWith('ແຂວງ')?prov:'ແຂວງ'+prov;
       // Level 2: group by district inside province
       const byDist={};
       provBranches.forEach(b=>{const d=b.district||'ບໍ່ລະບຸເມືອງ';if(!byDist[d])byDist[d]=[];byDist[d].push(b);});
-      const distHTML=Object.keys(byDist).sort().map(dist=>{
-        const did='dist-'+sc.id+'-'+prov.replace(/\W/g,'_')+'-'+dist.replace(/\W/g,'_');
+      const distHTML=Object.keys(byDist).sort().map((dist,distIdx)=>{
+        const did='dist-'+scIdx+'-'+provIdx+'-'+distIdx;
         const distBranches=byDist[dist];
+        const distDisp=dist.startsWith('ເມືອງ')?dist:'ເມືອງ'+dist;
         return `<div style="margin-bottom:3px">
           <div onclick="toggleAccordion('${did}')" style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--gray-50);border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;user-select:none">
             <i id="arr-${did}" class="fa fa-chevron-right" style="font-size:9px;transition:.2s;color:var(--gray-500)"></i>
             <i class="fa fa-city" style="color:var(--blue);font-size:11px"></i>
-            ເມືອງ${esc(dist)}
+            ${esc(distDisp)}
             <span style="margin-left:auto;font-size:11px;color:var(--gray-500);font-weight:400">${distBranches.length} ສາຂາ</span>
+            <button class="btn-icon" style="width:22px;height:22px;color:var(--blue)" onclick="event.stopPropagation();renameDistrict('${sc.id}','${esc(prov)}','${esc(dist)}')" title="ແກ້ໄຂຊື່ເມືອງ"><i class="fa fa-pen" style="font-size:9px"></i></button>
+            <button class="btn-icon" style="width:22px;height:22px;color:var(--green)" onclick="event.stopPropagation();openAddBranch('${sc.id}','${esc(prov)}','${esc(dist)}')" title="ເພີ່ມສາຂາໃນເມືອງນີ້"><i class="fa fa-plus" style="font-size:9px"></i></button>
           </div>
           <div id="${did}" style="display:none;padding:2px 0 2px 22px">
             ${distBranches.map(b=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--gray-100)">
@@ -1704,8 +2025,10 @@ function renderShippingWithBranches(){
         <div onclick="toggleAccordion('${pid}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--gray-100);border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;user-select:none">
           <i id="arr-${pid}" class="fa fa-chevron-right" style="font-size:10px;transition:.2s;color:var(--gray-500)"></i>
           <i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i>
-          ແຂວງ${esc(prov)}
+          ${esc(provDisp)}
           <span style="margin-left:auto;font-size:11px;color:var(--gray-500);font-weight:400">${provBranches.length} ສາຂາ</span>
+          <button class="btn-icon" style="width:24px;height:24px;color:var(--blue)" onclick="event.stopPropagation();renameProvince('${sc.id}','${esc(prov)}')" title="ແກ້ໄຂຊື່ແຂວງ"><i class="fa fa-pen" style="font-size:10px"></i></button>
+          <button class="btn-icon" style="width:24px;height:24px;color:var(--green)" onclick="event.stopPropagation();openAddBranch('${sc.id}','${esc(prov)}','')" title="ເພີ່ມສາຂາໃນແຂວງນີ້"><i class="fa fa-plus" style="font-size:10px"></i></button>
         </div>
         <div id="${pid}" style="display:none;padding:4px 0 4px 18px">
           ${distHTML}
@@ -1744,25 +2067,49 @@ function renderShipList(){
   if(!S.db.shipCos.length) return '<p style="color:var(--gray-500);font-size:13px">ຍັງບໍ່ມີ</p>';
   return S.db.shipCos.map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-200)"><span>${esc(s.name)}</span><button class="btn-icon del" onclick="delShipCo('${s.id}')">✕</button></div>`).join('');
 }
-function openAddBranch(shipCoId){
-  sv('branch-id',''); sv('branch-ship-id',shipCoId); sv('br-name','');
+function openAddBranch(shipCoId='',province='',district=''){
+  sv('branch-id',''); sv('br-name','');
+  sv('br-prov',province); sv('br-dist',district);
+  const co=S.db.shipCos.find(x=>x.id===shipCoId);
+  sv('br-ship',co?co.name:'');
   document.getElementById('branch-modal-title').textContent='ເພີ່ມສາຂາ';
-  populateBranchProvinces();
+  buildShipCombo();
+  populateBranchProvinces(province);
+  if(province) setTimeout(()=>updateBranchDistricts(district),30);
   openModal('modal-branch');
 }
+function openAddBranchFromSale(){
+  const ship=v('s-ship').trim();
+  const prov=v('s-prov').trim();
+  const dist=v('s-dist').trim();
+  const co=S.db.shipCos.find(x=>x.name===ship);
+  openAddBranch(co?co.id:'',prov,dist);
+}
 function openEditBranch(id,name,province,district,shipCoId){
-  sv('branch-id',id); sv('branch-ship-id',shipCoId); sv('br-name',name||'');
+  sv('branch-id',id); sv('br-name',name||'');
+  sv('br-prov',province||''); sv('br-dist',district||'');
+  const co=S.db.shipCos.find(x=>x.id===shipCoId);
+  sv('br-ship',co?co.name:'');
   document.getElementById('branch-modal-title').textContent='ແກ້ໄຂສາຂາ';
+  buildShipCombo();
   populateBranchProvinces(province||'');
   setTimeout(()=>updateBranchDistricts(district||''),30);
   openModal('modal-branch');
 }
 async function saveBranch(){
+  const shipName=v('br-ship').trim();
   const province=v('br-prov'), district=v('br-dist'), name=v('br-name').trim();
+  if(!shipName){toast('ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງ','error');return;}
   if(!province){toast('ກະລຸນາເລືອກແຂວງ','error');return;}
   const displayName=name||(district?`${province} - ${district}`:province);
-  const shipCoId=v('branch-ship-id'), bid=v('branch-id');
-  const payload={company_id:S.company.id,shipping_company_id:shipCoId,name:displayName,province,district:district||null};
+  let shipCoObj=S.db.shipCos.find(x=>x.name===shipName);
+  if(!shipCoObj){
+    const{data:ns}=await sb.from('shipping_companies').insert({company_id:S.company.id,name:shipName}).select().single();
+    if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
+  }
+  if(!shipCoObj){toast('ບໍ່ສາມາດບັນທຶກບໍລິສັດຂົນສົ່ງ','error');return;}
+  const bid=v('branch-id');
+  const payload={company_id:S.company.id,shipping_company_id:shipCoObj.id,name:displayName,province,district:district||null};
   let error;
   if(bid){
     const r=await sb.from('branches').update(payload).eq('id',bid);
@@ -1780,24 +2127,79 @@ async function saveBranch(){
   toast(bid?'ແກ້ໄຂສຳເລັດ':'ເພີ່ມສາຂາສຳເລັດ','success');
 }
 function populateBranchProvinces(sel=''){
-  const el=document.getElementById('br-prov'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກແຂວງ --</option>';
-  Object.keys(LAO_GEO).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
+  buildBranchProvCombo();
+  if(sel) sv('br-prov',sel);
   updateBranchDistricts();
 }
 function updateBranchDistricts(sel=''){
-  const prov=v('br-prov'), el=document.getElementById('br-dist'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກເມືອງ --</option>';
-  if(prov&&LAO_GEO[prov]) LAO_GEO[prov].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
+  buildBranchDistCombo();
+  if(sel) sv('br-dist',sel);
+}
+function buildBranchProvCombo(){
+  const list=document.getElementById('combo-br-prov');
+  list.innerHTML=getAllProvinces().map(p=>`<div class="combo-item" onmousedown="pickBranchProv('${esc(p)}')">${esc(p)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
+}
+function pickBranchProv(name){
+  sv('br-prov',name); sv('br-dist','');
+  buildBranchDistCombo(); closeBranchCombo('prov');
+}
+function buildBranchDistCombo(){
+  const prov=v('br-prov').trim();
+  const list=document.getElementById('combo-br-dist');
+  list.innerHTML=prov?getAllDistricts(prov).map(d=>`<div class="combo-item" onmousedown="pickBranchDist('${esc(d)}')">${esc(d)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>':'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ເລືອກແຂວງກ່ອນ</div>';
+}
+function pickBranchDist(name){
+  sv('br-dist',name);
+  closeBranchCombo('dist');
+}
+function openBranchCombo(type){document.getElementById('combo-br-'+type).classList.add('open');}
+function closeBranchCombo(type){document.getElementById('combo-br-'+type).classList.remove('open');}
+function filterBranchCombo(type){
+  const input=document.getElementById('br-'+type);
+  const list=document.getElementById('combo-br-'+type);
+  const q=input.value.toLowerCase();
+  list.querySelectorAll('.combo-item').forEach(item=>{item.style.display=item.textContent.toLowerCase().includes(q)?'':'none';});
 }
 async function addBranch(shipCoId){ openAddBranch(shipCoId); }
 async function editBranch(id,name,province,district,shipCoId){ openEditBranch(id,name,province,district,shipCoId); }
 async function delBranch(id){
-  if(!confirm('ລຶບສາຂາ?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບສາຂານີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('branches').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.filter(b=>b.id!==id);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
+}
+async function renameProvince(shipCoId,oldName){
+  const newName=prompt('ແກ້ໄຂຊື່ແຂວງ:',oldName);
+  if(!newName||!newName.trim()||newName.trim()===oldName) return;
+  const name=newName.trim();
+  const ids=S.db.branches.filter(b=>b.shipping_company_id===shipCoId&&b.province===oldName).map(b=>b.id);
+  if(!ids.length) return;
+  const{error}=await sb.from('branches').update({province:name}).in('id',ids);
+  if(error){toast(error.message,'error');return;}
+  S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,province:name}:b);
+  document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
+  toast('ແກ້ໄຂຊື່ແຂວງສຳເລັດ ✓','success');
+}
+async function renameDistrict(shipCoId,province,oldName){
+  const newName=prompt('ແກ້ໄຂຊື່ເມືອງ:',oldName);
+  if(!newName||!newName.trim()||newName.trim()===oldName) return;
+  const name=newName.trim();
+  const ids=S.db.branches.filter(b=>b.shipping_company_id===shipCoId&&b.province===province&&b.district===oldName).map(b=>b.id);
+  if(!ids.length) return;
+  const{error}=await sb.from('branches').update({district:name}).in('id',ids);
+  if(error){toast(error.message,'error');return;}
+  S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,district:name}:b);
+  document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
+  toast('ແກ້ໄຂຊື່ເມືອງສຳເລັດ ✓','success');
 }
 async function addShipCo(){
   const name=prompt('ຊື່ບໍລິສັດຂົນສົ່ງ:'); if(!name?.trim()) return;
@@ -1809,7 +2211,15 @@ async function addShipCo(){
   toast('ເພີ່ມສຳເລັດ','success');
 }
 async function delShipCo(id){
-  if(!confirm('ລຶບບໍລິສັດຂົນສົ່ງ ແລະ ສາຂາທັງໝົດ?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບບໍລິສັດຂົນສົ່ງ ແລະ ສາຂາທັງໝົດ?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('shipping_companies').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.shipCos=S.db.shipCos.filter(x=>x.id!==id);
@@ -1817,14 +2227,87 @@ async function delShipCo(id){
   const sml=document.getElementById('shipping-main-list');
   if(sml) sml.innerHTML=renderShippingWithBranches();
 }
+async function uploadCompanyLogo(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>2*1024*1024){toast('ຂະໜາດຮູບຕ້ອງບໍ່ເກີນ 2MB','error');return;}
+  const progressEl=document.getElementById('logo-progress');
+  const progressBar=document.getElementById('logo-progress-bar');
+  const progressText=document.getElementById('logo-progress-text');
+  const btn=document.getElementById('btn-upload-logo');
+  progressEl.style.display='block';
+  progressBar.style.width='0%';
+  progressText.textContent='0%';
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa fa-spinner fa-spin"></i> ກຳລັງອັບໂຫຼດ...';
+  const reader=new FileReader();
+  reader.onprogress=(e)=>{
+    if(e.lengthComputable){
+      const pct=Math.round((e.loaded/e.total)*100);
+      progressBar.style.width=pct+'%';
+      progressText.textContent=pct+'%';
+    }
+  };
+  reader.onload=async(e)=>{
+    progressBar.style.width='100%';
+    progressText.textContent='100%';
+    const base64=e.target.result;
+    const{error}=await sb.from('companies').update({logo_url:base64}).eq('id',S.company.id);
+    if(error){toast(error.message,'error');resetUploadBtn();return;}
+    S.company.logo=base64;
+    try{localStorage.setItem('hg_company',JSON.stringify({...S.company,role:S.role}));}catch(e){}
+    renderSidebar();
+    renderCoInfo();
+    toast('ອັບໂຫຼດ logo ສຳເລັດ ✓','success');
+    resetUploadBtn();
+  };
+  reader.onerror=()=>{
+    toast('ອັບໂຫຼດລົ້ມເຫຼວ','error');
+    resetUploadBtn();
+  };
+  function resetUploadBtn(){
+    setTimeout(()=>{
+      progressEl.style.display='none';
+      btn.disabled=false;
+      btn.innerHTML='<i class="fa fa-upload"></i> ອັບໂຫຼດ';
+      input.value='';
+    },500);
+  }
+  reader.readAsDataURL(file);
+}
+function toggleCoEdit(){
+  const displayMode=document.getElementById('co-display-mode');
+  const editMode=document.getElementById('co-edit-mode');
+  const btn=document.getElementById('btn-edit-co');
+  if(displayMode.style.display==='none'){
+    displayMode.style.display='block';
+    editMode.style.display='none';
+    btn.style.display='inline-flex';
+  }else{
+    displayMode.style.display='none';
+    editMode.style.display='block';
+    btn.style.display='none';
+  }
+}
 async function saveCoSettings(){
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນບັນທຶກ',
+    message:'ທ່ານແນ່ໃຈບໍທີ່ຈະບັນທຶກຂໍ້ມູນບໍລິສັດ?',
+    icon:'💾',
+    confirmText:'ບັນທຶກ',
+    cancelText:'ຍົກເລີກ'
+  });
+  if(!confirmed) return;
   const name=v('co-name'),gas=v('co-gas');
   const{error}=await sb.from('companies').update({name}).eq('id',S.company.id);
   if(error){toast(error.message,'error');return;}
   S.company.name=name; GAS_URL=gas; localStorage.setItem('gas_url',gas);
+  try{localStorage.setItem('hg_company',JSON.stringify({...S.company,role:S.role}));}catch(e){}
   document.getElementById('sb-company-name').textContent=name;
-  document.getElementById('sb-logo').textContent=name[0]||'🌿';
+  renderSidebar();
+  renderCoInfo();
   toast('ບັນທຶກສຳເລັດ ✓','success');
+  toggleCoEditMode(false);
 }
 async function inviteMember(){
   const email=v('inv-email'),role=v('inv-role');
@@ -1839,7 +2322,15 @@ async function inviteMember(){
   toast('ເພີ່ມສຳເລັດ ✓','success'); renderCoSettings();
 }
 async function removeMember(mid){
-  if(!confirm('ລຶບສະມາຊິກ?')) return;
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:'ລຶບສະມາຊິກນີ້?',
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
   const{error}=await sb.from('company_members').delete().eq('id',mid);
   if(error){toast(error.message,'error');return;}
   S.db.members=S.db.members.filter(x=>x.id!==mid); toast('ລຶບສຳເລັດ','success'); renderCoSettings();
@@ -1858,7 +2349,25 @@ function buildShipCombo(){
 }
 function pickShip(name){
   sv('s-ship',name); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
-  populateProvinces(); closeCombo('ship');
+  sv('br-ship',name); sv('br-prov',''); sv('br-dist','');
+  buildProvCombo(); buildDistCombo(); buildBranchCombo(); closeCombo('ship');
+}
+function buildProvCombo(){
+  const list=document.getElementById('combo-prov');
+  list.innerHTML=getAllProvinces().map(p=>`<div class="combo-item" onmousedown="pickProv('${esc(p)}')">${esc(p)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
+}
+function pickProv(name){
+  sv('s-prov',name); sv('s-dist',''); sv('s-branch','');
+  buildDistCombo(); buildBranchCombo(); closeCombo('prov');
+}
+function buildDistCombo(){
+  const prov=v('s-prov').trim();
+  const list=document.getElementById('combo-dist');
+  list.innerHTML=prov?getAllDistricts(prov).map(d=>`<div class="combo-item" onmousedown="pickDist('${esc(d)}')">${esc(d)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>':'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ເລືອກແຂວງກ່ອນ</div>';
+}
+function pickDist(name){
+  sv('s-dist',name); sv('s-branch','');
+  buildBranchCombo(); closeCombo('dist');
 }
 function buildBranchCombo(){
   const shipName=v('s-ship').trim();
@@ -1876,6 +2385,12 @@ function filterCombo(type){
   const list=document.getElementById('combo-'+type);
   list.querySelectorAll('.combo-item').forEach(item=>{item.style.display=item.textContent.toLowerCase().includes(q)?'':'none';});
 }
+function filterShipCombo(){
+  const input=document.getElementById('br-ship');
+  const list=document.getElementById('combo-ship');
+  const q=input.value.toLowerCase();
+  list.querySelectorAll('.combo-item').forEach(item=>{item.style.display=item.textContent.toLowerCase().includes(q)?'':'none';});
+}
 function openCombo(type){document.getElementById('combo-'+type).classList.add('open');}
 function closeCombo(type){document.getElementById('combo-'+type).classList.remove('open');}
 function pickComboVal(fieldId,val){sv(fieldId,val);}
@@ -1884,32 +2399,22 @@ function pickProd(name,price,cost){sv('s-prod',name);sv('s-price',price);sv('s-c
 // ══════════════════════════════════════
 //  GEO
 // ══════════════════════════════════════
+function getAllProvinces(){
+  const custom=[...new Set(S.db.branches.map(b=>b.province).filter(Boolean))];
+  return [...new Set([...Object.keys(LAO_GEO),...custom])].sort();
+}
+function getAllDistricts(prov){
+  const std=LAO_GEO[prov]||[];
+  const custom=[...new Set(S.db.branches.filter(b=>b.province===prov&&b.district).map(b=>b.district))];
+  return [...new Set([...std,...custom])].sort();
+}
 function populateProvinces(sel=''){
-  const el=document.getElementById('s-prov'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກ --</option>';
-  const shipName=v('s-ship').trim();
-  const sc=S.db.shipCos.find(x=>x.name===shipName);
-  if(sc){
-    // Only provinces that have branches for this company
-    const provs=[...new Set(S.db.branches.filter(b=>b.shipping_company_id===sc.id&&b.province).map(b=>b.province))].sort();
-    provs.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
-  } else {
-    Object.keys(LAO_GEO).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===sel)o.selected=true;el.appendChild(o);});
-  }
+  buildProvCombo();
   if(!sel) updateDistricts();
 }
 function updateDistricts(sel=''){
-  const prov=v('s-prov'), el=document.getElementById('s-dist'); if(!el) return;
-  el.innerHTML='<option value="">-- ເລືອກ --</option>';
-  const shipName=v('s-ship').trim();
-  const sc=S.db.shipCos.find(x=>x.name===shipName);
-  if(sc&&prov){
-    // Only districts that have branches for this company in this province
-    const dists=[...new Set(S.db.branches.filter(b=>b.shipping_company_id===sc.id&&b.province===prov&&b.district).map(b=>b.district))].sort();
-    dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
-  } else if(prov&&LAO_GEO[prov]){
-    LAO_GEO[prov].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;if(d===sel)o.selected=true;el.appendChild(o);});
-  }
+  buildDistCombo();
+  if(sel) sv('s-dist',sel);
 }
 
 // ══════════════════════════════════════
