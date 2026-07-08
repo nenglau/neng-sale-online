@@ -2301,9 +2301,15 @@ async function saveCoSettings(){
   const name=v('co-name'),gas=v('co-gas');
   const{error}=await sb.from('companies').update({name}).eq('id',S.company.id);
   if(error){toast(error.message,'error');return;}
-  S.company.name=name; GAS_URL=gas; localStorage.setItem('gas_url',gas);
+  // Reload company data from Supabase to ensure latest data (including logo)
+  const{data:coData}=await sb.from('companies').select('*').eq('id',S.company.id).single();
+  if(coData){
+    S.company.name=coData.name;
+    S.company.logo=coData.logo_url;
+    GAS_URL=gas; localStorage.setItem('gas_url',gas);
+  }
   try{localStorage.setItem('hg_company',JSON.stringify({...S.company,role:S.role}));}catch(e){}
-  document.getElementById('sb-company-name').textContent=name;
+  document.getElementById('sb-company-name').textContent=S.company.name;
   renderSidebar();
   renderCoInfo();
   toast('ບັນທຶກສຳເລັດ ✓','success');
