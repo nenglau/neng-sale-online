@@ -113,6 +113,9 @@ datalist option{font-family:'Noto Sans Lao',sans-serif}
 .btn-switch:hover{background:var(--green-border)}
 .btn-logout{background:var(--red-light);color:var(--red)}
 .btn-logout:hover{background:#ffcdd2}
+.btn-refresh-update{padding:8px 12px;background:var(--green);color:var(--white);border-radius:var(--radius);font-size:13px;font-weight:600;transition:.15s;display:flex;align-items:center;gap:6px}
+.btn-refresh-update:hover{background:var(--green-mid)}
+.btn-refresh-update i{font-size:14px}
 #main-content{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--white);border-bottom:1px solid var(--green-border);height:var(--topbar-h);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
 .topbar-title{font-size:17px;font-weight:700;color:var(--gray-900)}
@@ -422,6 +425,9 @@ textarea.fc{resize:vertical;min-height:72px}
       </div>
       <button id="btn-pwa-install" onclick="installPWA()" style="display:none;margin-top:8px;width:100%;padding:8px;background:var(--green);color:white;border-radius:var(--radius);font-size:13px;font-weight:600;gap:6px" class="btn-sidebar-action">
         ⬇ ຕິດຕັ້ງເປັນ App
+      </button>
+      <button id="btn-refresh-update" onclick="forceRefresh()" style="margin-top:8px;width:100%;" class="btn-refresh-update">
+        <i class="fa fa-sync"></i> ອັບເດດ
       </button>
     </div>
   </aside>
@@ -1051,6 +1057,30 @@ async function doLogout(){
   try{localStorage.removeItem('hg_company');localStorage.removeItem('hg_page');}catch(e){}
   S={...S,user:null,profile:null,company:null,role:null,db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}};
   showScreen('auth-screen');
+}
+async function forceRefresh(){
+  const btn=document.getElementById('btn-refresh-update');
+  if(btn){
+    btn.innerHTML='<i class="fa fa-spinner fa-spin"></i> ກຳລັງອັບເດດ...';
+    btn.disabled=true;
+  }
+  try{
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg){
+        await reg.postMessage('CLEAR_CACHE');
+        await reg.postMessage('SKIP_WAITING');
+      }
+    }
+    if('caches' in window){
+      const cacheNames=await caches.keys();
+      await Promise.all(cacheNames.map(name=>caches.delete(name)));
+    }
+    setTimeout(()=>location.reload(true),500);
+  }catch(e){
+    console.error('Refresh error:',e);
+    setTimeout(()=>location.reload(true),500);
+  }
 }
 async function afterLogin(user){
   S.user=user;

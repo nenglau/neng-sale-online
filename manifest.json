@@ -1,7 +1,7 @@
 {
-  "name": "Herb & Gadget Dashboard",
-  "short_name": "H&G",
-  "description": "ລະບົບຈັດການຍອດຂາຍ Herb & Gadget Online",
+  "name": "Nsale Manager",
+  "short_name": "Nsale",
+  "description": "ລະບົບຈັດການຍອດຂາຍ Nsale Manager",
   "start_url": "/neng-sale-online/",
   "scope": "/neng-sale-online/",
   "display": "standalone",
