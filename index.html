@@ -1329,8 +1329,8 @@ function renderDash(){
     <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ຍອດຂາຍ (ສຳເລັດ)</div><div class="stat-value">${fmt(rev)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລລວມ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">ລໍຖ້າ / ຈັດສົ່ງ</div><div class="stat-value">${pending}</div><div class="stat-sub">ລາຍການ</div></div>
-    <div class="stat-card blue"><span class="stat-icon">📦</span><div class="stat-label">ຍອດ order ລວມທັງໝົດ</div><div class="stat-value">${totalOrders}</div><div class="stat-sub">ລາຍການ</div></div>
-    <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">ລວມ order ທີ່ຖືກຍົກເລີກ (ຕີກັບ)</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
+    <div class="stat-card blue"><span class="stat-icon">📦</span><div class="stat-label">order ທັງໝົດ</div><div class="stat-value">${totalOrders}</div><div class="stat-sub">ລາຍການ</div></div>
+    <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">order ຍົກເລີກ</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value">${fmt(exp)}</div><div class="stat-sub">₭</div></div>`;
   const tbody=document.getElementById('dash-recent');
   const rec=sales.slice(0,10);
