@@ -357,6 +357,19 @@ textarea.fc{resize:vertical;min-height:72px}
       <div class="form-group"><label>ລະຫັດຜ່ານ (ຢ່າງໜ້ອຍ 6 ຕົວ)</label><input id="reg-password" class="form-control" type="password" placeholder="••••••••"></div>
       <button class="btn-primary" onclick="doRegister()">ສ້າງບັນຊີ</button>
     </div>
+    <!-- ຟອມລືມລະຫັດຜ່ານ -->
+    <div id="forgot-form" class="auth-form" style="display:none">
+      <div class="form-group"><label>Email</label><input id="forgot-email" class="form-control" type="email" placeholder="your@email.com"></div>
+      <button class="btn-primary" onclick="doSendResetEmail()">ສົ່ງລິງກ໌ລືມລະຫັດຜ່ານ</button>
+      <div style="text-align:center;margin-top:16px"><a href="#" onclick="showLoginForm()" style="color:var(--green);font-size:13px;text-decoration:none">ກັບຄືນໜ້າ login</a></div>
+    </div>
+    <!-- ຟອມຕັ້ງລະຫັດຜ່ານໃໝ່ -->
+    <div id="reset-form" class="auth-form" style="display:none">
+      <div class="form-group"><label>ລະຫັດຜ່ານໃໝ່ (ຢ່າງໜ້ອຍ 6 ຕົວ)</label><input id="reset-password" class="form-control" type="password" placeholder="••••••••"></div>
+      <div class="form-group"><label>ຢືນຢັນລະຫັດຜ່ານ</label><input id="reset-confirm" class="form-control" type="password" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doResetPassword()">ຕັ້ງລະຫັດຜ່ານໃໝ່</button>
+      <div style="text-align:center;margin-top:16px"><a href="#" onclick="showLoginForm()" style="color:var(--green);font-size:13px;text-decoration:none">ກັບຄືນໜ້າ login</a></div>
+    </div>
   </div>
 </div>
 
@@ -970,12 +983,68 @@ async function doRegister(){
   if(error){showMsg(error.message);return;}
   showMsg('ສ້າງ account ສຳເລັດ! ກວດ email ຂອງທ່ານ ຫຼື ເຂົ້າສູ່ລະບົບໄດ້ທັນທີ','success');
 }
-async function doForgotPassword(){
-  const email=v('login-email');
+// ແສງຟອມລືມລະຫັດຜ່ານ
+function doForgotPassword(){
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('register-form').style.display='none';
+  document.getElementById('forgot-form').style.display='block';
+  document.getElementById('reset-form').style.display='none';
+  hideMsg();
+  // ຄັດລຶບ email ຈາກ login ໄປໃສ່ forgot form
+  document.getElementById('forgot-email').value=v('login-email');
+}
+// ແສງຟອມ login ປົກກະຕິ
+function showLoginForm(){
+  document.getElementById('login-form').style.display='block';
+  document.getElementById('register-form').style.display='none';
+  document.getElementById('forgot-form').style.display='none';
+  document.getElementById('reset-form').style.display='none';
+  hideMsg();
+}
+// ສົ່ງອີເມລ reset ລະຫັດຜ່ານ
+async function doSendResetEmail(){
+  const email=v('forgot-email');
   if(!email){showMsg('ກະລຸນາປ້ອນ email ຂອງທ່ານ');return;}
-  const{error}=await sb.auth.resetPasswordForEmail(email);
+  const{error}=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo:'https://nenglau.github.io/neng-sale-online/'
+  });
   if(error){showMsg(error.message);return;}
   showMsg('ສົ່ງ email ສຳເລັດ! ກວດ email ຂອງທ່ານ ເພື່ອຕັ້ງລະຫັດຜ່ານໃໝ່','success');
+}
+// ຕັ້ງລະຫັດຜ່ານໃໝ່
+async function doResetPassword(){
+  const pass=v('reset-password'),confirm=v('reset-confirm');
+  if(!pass||!confirm){showMsg('ກະລຸນາປ້ອນລະຫັດຜ່ານໃໝ່ ແລະ ຢືນຢັນ');return;}
+  if(pass.length<6){showMsg('ລະຫັດຜ່ານຕ້ອງຢ່າງໜ້ອຍ 6 ຕົວ');return;}
+  if(pass!==confirm){showMsg('ລະຫັດຜ່ານໃໝ່ ແລະ ຢືນຢັນບໍ່ຕົງກັນ');return;}
+  const{error}=await sb.auth.updateUser({password:pass});
+  if(error){showMsg(error.message);return;}
+  showMsg('ຕັ້ງລະຫັດຜ່ານໃໝ່ສຳເລັດ! ກັບໄປໜ້າ login','success');
+  // ລຶບ URL hash ເພື່ອບໍ່ໃຫ້ຄ້າ token ເກົ່າ
+  window.location.hash='';
+  // ກັບໄປໜ້າ login ຫຼັງ 2 ວິນາທີ
+  setTimeout(()=>showLoginForm(),2000);
+}
+// ເຊັກ URL hash ຕອນໂຫຼດໜ້າເວັບ ເພື່ອຕັດສິນໃຈ token recovery
+async function checkRecoveryToken(){
+  const hash=window.location.hash;
+  if(hash.includes('#access_token=')&&hash.includes('type=recovery')){
+    // ມີ recovery token ໃນ URL
+    try{
+      // ໃຫ້ Supabase ປະມວນຜົນ session ຈາກ URL hash
+      await sb.auth.getSession();
+      // ແສງຟອມຕັ້ງລະຫັດຜ່ານໃໝ່
+      document.getElementById('login-form').style.display='none';
+      document.getElementById('register-form').style.display='none';
+      document.getElementById('forgot-form').style.display='none';
+      document.getElementById('reset-form').style.display='block';
+      hideMsg();
+      showMsg('ກະລຸນາຕັ້ງລະຫັດຜ່ານໃໝ່','success');
+    }catch(e){
+      showMsg('ລິງກ໌ບໍ່ຖືກຕ້ອງ ຫຼື ໝົດອາຍຸແລ້ວ','error');
+      showLoginForm();
+    }
+  }
 }
 async function doLogout(){
   await sb.auth.signOut();
@@ -2538,6 +2607,8 @@ async function init(){
   if(session?.user){await afterLogin(session.user);return;}
   // No saved session → show login
   showScreen('auth-screen');
+  // ເຊັກ URL hash ສຳລັບ recovery token
+  await checkRecoveryToken();
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(event==='SIGNED_IN'&&session?.user) await afterLogin(session.user);
     else if(event==='SIGNED_OUT') showScreen('auth-screen');
