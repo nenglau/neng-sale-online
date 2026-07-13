@@ -206,9 +206,17 @@ textarea.fc{resize:vertical;min-height:72px}
 .rep-city-pct{font-size:12px;font-weight:700;color:var(--green);min-width:48px;text-align:right}
 
 /* PERIOD TABS */
-.period-tabs{display:flex;background:var(--gray-100);border-radius:var(--radius);padding:3px;gap:2px}
-.period-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
+.period-tabs{display:flex;background:var(--gray-100);border-radius:var(--radius);padding:2px;gap:1px}
+.period-tab{padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
 .period-tab.active{background:var(--white);color:var(--green);box-shadow:var(--shadow-sm)}
+.period-tab.icon-only{padding:4px 6px;min-width:24px;display:flex;align-items:center;justify-content:center}
+.period-tab.icon-only i{font-size:12px}
+@media(max-width:768px){
+  .period-tabs{padding:2px;gap:1px}
+  .period-tab{padding:3px 6px;font-size:10px}
+  .period-tab.icon-only{padding:3px 5px;min-width:22px}
+  .period-tab.icon-only i{font-size:11px}
+}
 
 /* SALES TABS — fixed bottom */
 .sales-tab-nav{position:fixed;bottom:0;left:var(--sidebar-w);right:0;z-index:90;display:flex;background:var(--white);border-top:2px solid var(--green-border);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
@@ -450,6 +458,7 @@ textarea.fc{resize:vertical;min-height:72px}
             <button class="period-tab" data-p="month" onclick="setDashPeriod('month')">ເດືອນ</button>
             <button class="period-tab" data-p="year" onclick="setDashPeriod('year')">ປີ</button>
             <button class="period-tab active" data-p="all" onclick="setDashPeriod('all')">ທັງໝົດ</button>
+            <button class="period-tab icon-only" id="dash-custom-btn" onclick="openDateRangePicker('dash')"><i class="fa fa-calendar"></i></button>
           </div>
         </div>
         <div class="stat-grid" id="dash-stats"></div>
@@ -471,7 +480,14 @@ textarea.fc{resize:vertical;min-height:72px}
           <div class="panel" style="margin-bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
             <div class="panel-header">
               <span class="panel-title"><i class="fa fa-box-open" style="color:var(--orange)"></i> ອໍເດີຕ້ອງສົ່ງ</span>
-              <div style="display:flex;align-items:center;gap:8px">
+              <div class="filter-bar">
+                <div class="period-tabs" id="pending-period">
+                  <button class="period-tab active" data-p="7day" onclick="setPendingPeriod('7day')">7 ວັນ</button>
+                  <button class="period-tab" data-p="month" onclick="setPendingPeriod('month')">ເດືອນ</button>
+                  <button class="period-tab" data-p="year" onclick="setPendingPeriod('year')">ປີ</button>
+                  <button class="period-tab" data-p="all" onclick="setPendingPeriod('all')">ທັງໝົດ</button>
+                  <button class="period-tab icon-only" id="pending-custom-btn" onclick="openDateRangePicker('pending')"><i class="fa fa-calendar"></i></button>
+                </div>
                 <span id="pending-count-label" style="font-size:12px;color:var(--gray-500)"></span>
                 <button class="btn btn-green btn-sm" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
                 <button id="btn-pending-edit" class="btn btn-outline btn-sm" onclick="togglePendingEditMode()"><i class="fa fa-check-square"></i> ແກ້ໄຂ</button>
@@ -496,6 +512,13 @@ textarea.fc{resize:vertical;min-height:72px}
               <span class="panel-title"><i class="fa fa-list-alt" style="color:var(--green)"></i> ຈັດການຍອດ</span>
               <div class="filter-bar">
                 <div class="search-wrap"><i class="fa fa-search"></i><input class="search-input" id="sales-search" placeholder="ຄົ້ນຫາ..." oninput="renderSalesTable()"></div>
+                <div class="period-tabs" id="sales-period">
+                  <button class="period-tab active" data-p="7day" onclick="setSalesPeriod('7day')">7 ວັນ</button>
+                  <button class="period-tab" data-p="month" onclick="setSalesPeriod('month')">ເດືອນ</button>
+                  <button class="period-tab" data-p="year" onclick="setSalesPeriod('year')">ປີ</button>
+                  <button class="period-tab" data-p="all" onclick="setSalesPeriod('all')">ທັງໝົດ</button>
+                  <button class="period-tab icon-only" id="sales-custom-btn" onclick="openDateRangePicker('sales')"><i class="fa fa-calendar"></i></button>
+                </div>
                 <select class="fc" style="width:130px" id="sales-sf" onchange="renderSalesTable()"><option value="">ທຸກສະຖານະ</option><option>ສຳເລັດ</option><option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ຍົກເລີກ</option></select>
                 <button class="btn btn-green" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
               </div>
@@ -536,6 +559,7 @@ textarea.fc{resize:vertical;min-height:72px}
                 <button class="period-tab active" data-p="month" onclick="setFinPeriod('month')">ເດືອນ</button>
                 <button class="period-tab" data-p="year" onclick="setFinPeriod('year')">ປີ</button>
                 <button class="period-tab" data-p="all" onclick="setFinPeriod('all')">ທັງໝົດ</button>
+                <button class="period-tab icon-only" id="fin-custom-btn" onclick="openDateRangePicker('fin')"><i class="fa fa-calendar"></i></button>
               </div>
               <button class="btn btn-green" onclick="openFinanceModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
             </div>
@@ -569,6 +593,7 @@ textarea.fc{resize:vertical;min-height:72px}
                 <button class="period-tab active" data-p="7day" onclick="setAdsPeriod('7day')">7 ວັນ</button>
                 <button class="period-tab" data-p="month" onclick="setAdsPeriod('month')">ເດືອນ</button>
                 <button class="period-tab" data-p="year" onclick="setAdsPeriod('year')">ປີ</button>
+                <button class="period-tab icon-only" id="ads-custom-btn" onclick="openDateRangePicker('ads')"><i class="fa fa-calendar"></i></button>
               </div>
             </div>
             <div class="chart-body"><canvas id="chart-ads"></canvas></div>
@@ -596,6 +621,8 @@ textarea.fc{resize:vertical;min-height:72px}
             <button class="period-tab active" data-p="7day" onclick="setRepPeriod('7day')">7 ວັນ</button>
             <button class="period-tab" data-p="month" onclick="setRepPeriod('month')">ເດືອນ</button>
             <button class="period-tab" data-p="year" onclick="setRepPeriod('year')">ປີ</button>
+            <button class="period-tab" data-p="all" onclick="setRepPeriod('all')">ທັງໝົດ</button>
+            <button class="period-tab icon-only" id="rep-custom-btn" onclick="openDateRangePicker('rep')"><i class="fa fa-calendar"></i></button>
           </div>
         </div>
         <div class="stat-grid" id="rep-stats"></div>
@@ -820,6 +847,22 @@ textarea.fc{resize:vertical;min-height:72px}
   </div>
 </div>
 
+<!-- Date Range Picker Modal -->
+<div class="modal-overlay" id="modal-date-range">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">ເລືອກຊ່ວງວັນທີ</span><button class="modal-close" onclick="closeModal('modal-date-range')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="date-range-context">
+      <div class="form-row"><div><label>ຈາກວັນທີ</label><input class="fc" type="date" id="date-range-start"></div></div>
+      <div class="form-row"><div><label>ຫາວັນທີ</label><input class="fc" type="date" id="date-range-end"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-date-range')">ຍົກເລີກ</button>
+      <button class="btn btn-green" onclick="applyDateRange()">ນຳໃຊ້</button>
+    </div>
+  </div>
+</div>
+
 <!-- Company Create Modal -->
 <div class="modal-overlay" id="modal-company-create">
   <div class="modal" style="max-width:460px">
@@ -931,23 +974,23 @@ let GAS_URL = localStorage.getItem('gas_url') || '';
 // ══════════════════════════════════════
 const LAO_GEO = {
   'ນະຄອນຫຼວງວຽງຈັນ':['ຈັນທະບູລີ','ສີໂຄດຕະບອງ','ໄຊເສດຖາ','ສີສັດຕະນາກ','ນາຊາຍທອງ','ໄຊທານີ','ຫາດຊາຍຟອງ','ສັງທອງ','ປາກງື່ມ'],
-  'ແຂວງຜົ້ງສາລີ':['ບຸນໃຕ້','ຂວາ','ໃໝ່','ຍອດອູ','ຜົ້ງສາລີ','ສຳພັນ','ບຸນເໜືອ'],
-  'ແຂວງຫຼວງນ້ຳທາ':['ຫຼວງນ້ຳທາ','ສິງ','ລອງ','ວຽງພູຄາ','ນາແລ'],
-  'ແຂວງອຸດົມໄຊ':['ໄຊ','ຫຼາ','ນາໝໍ້','ງາ','ແບ່ງ','ຮຸນ','ປາກແບ່ງ'],
-  'ແຂວງບໍ່ແກ້ວ':['ຫ້ວຍຊາຍ','ຕົ້ນ\u200bເຜິ້ງ','ເມິງ','ຜາອຸດົມ','ປາກທາ'],
-  'ແຂວງຫຼວງພະບາງ':['ຫຼວງພະບາງ','ຊຽງເງິນ','ນານ','ປາກອູ','ນ້ຳບາກ','ງອຍ','ປາກແຊງ','ໂພນໄຊ','ຈອມເພັດ','ວຽງຄຳ','ພູຄູນ','ໂພນທອງ'],
-  'ແຂວງຫົວພັນ':['ຊຳເໜືອ','ຊຽງຄໍ້','ຮ້ຽມ','ວຽງໄຊ','ຫົວເມືອງ','ຊຳໃຕ້','ສົບເບົາ','ແອດ','ກວັນ','ຊ່ອນ'],
-  'ແຂວງໄຊຍະບູລີ':['ບໍ່ແຕນ','ຫົງສາ','ແກ່ນທ້າວ','ຄອບ','ເງິນ','ປາກລາຍ','ພຽງ','ທົ່ງມີໄຊ','ໄຊຍະບູລີ','ຊຽງຮ່ອນ','ໄຊສະຖານ'],
-  'ແຂວງຊຽງຂວາງ':['ແປກ (ໂພນສະຫວັນ)','ຄຳ','ໜອງແຮດ','ຄຸນ','ໝອກ','ພູກູດ','ຜາໄຊ'],
-  'ແຂວງວຽງຈັນ':['ເຟືອງ','ຫີນເຫີບ','ກາສີ','ແກ້ວອຸດົມ','ແມດ','ໂພນໂຮງ','ທຸລະຄົມ','ວັງວຽງ','ວຽງຄຳ','ຊະນະຄາມ','ໝື່ນ'],
-  'ແຂວງບໍລິຄຳໄຊ':['ປາກຊັນ','ທ່າພະບາດ','ປາກກະດິງ','ບໍລິຄັນ','ຄຳເກີດ','ວຽງທອງ','ໄຊຈຳພອນ'],
-  'ແຂວງຄຳມ່ວນ':['ທ່າແຂກ','ມະຫາໄຊ','ໜອງບົກ','ຫີນບູນ','ຍົມມະລາດ','ບົວລະພາ','ນາກາຍ','ເຊບັ້ງໄຟ','ໄຊບົວທອງ','ຄູນຄຳ'],
-  'ແຂວງສະຫວັນນະເຂດ':['ໄກສອນ ພົມວິຫານ','ອາດສະພັງທອງ','ພີນ','ເຊໂປນ','ນອງ','ທ່າປາງທອງ','ສອງຄອນ','ຈຳພອນ','ຊົນນະບູລີ','ໄຊບູລີ','ວິລະບູລີ','ອາດສະພອນ','ໄຊພູທອງ','ພະລານໄຊ'],
-  'ແຂວງສາລະວັນ':['ສາລະວັນ','ຕຸ້ມລານ','ລະຄອນເພັງ','ວາປີ','ຄົງເຊໂດນ','ເລົ່າງາມ','ຕະໂອ້ຍ','ສະໝ້ວຍ'],
-  'ແຂວງເຊກອງ':['ທ່າແຕງ','ລະມາມ','ກະລຶມ','ດັກຈຶງ'],
-  'ແຂວງຈຳປາສັກ':['ປາກເຊ','ຊະນະສົມບູນ','ບາຈຽງຈະເລີນສຸກ','ປາກຊ່ອງ','ປະທຸມພອນ','ໂພນທອງ','ຈຳປາສັກ','ສຸຂຸມາ','ມູນລະປະໂມກ','ໂຂງ'],
-  'ແຂວງອັດຕະປື':['ໄຊເຊດຖາ','ສາມັກຄີໄຊ','ສະໜາມໄຊ','ຊານໄຊ','ໄຊພູວົງ'],
-  'ແຂວງໄຊສົມບູນ':['ອະນຸວົງ','ລ້ອງແຈ້ງ','ລ້ອງຊານ','ຮົ່ມ','ທ່າໂທມ']
+  'ຜົ້ງສາລີ':['ບຸນໃຕ້','ຂວາ','ໃໝ່','ຍອດອູ','ຜົ້ງສາລີ','ສຳພັນ','ບຸນເໜືອ'],
+  'ຫຼວງນ້ຳທາ':['ຫຼວງນ້ຳທາ','ສິງ','ລອງ','ວຽງພູຄາ','ນາແລ'],
+  'ອຸດົມໄຊ':['ໄຊ','ຫຼາ','ນາໝໍ້','ງາ','ແບ່ງ','ຮຸນ','ປາກແບ່ງ'],
+  'ບໍ່ແກ້ວ':['ຫ້ວຍຊາຍ','ຕົ້ນ\u200bເຜິ້ງ','ເມິງ','ຜາອຸດົມ','ປາກທາ'],
+  'ຫຼວງພະບາງ':['ຫຼວງພະບາງ','ຊຽງເງິນ','ນານ','ປາກອູ','ນ້ຳບາກ','ງອຍ','ປາກແຊງ','ໂພນໄຊ','ຈອມເພັດ','ວຽງຄຳ','ພູຄູນ','ໂພນທອງ'],
+  'ຫົວພັນ':['ຊຳເໜືອ','ຊຽງຄໍ້','ຮ້ຽມ','ວຽງໄຊ','ຫົວເມືອງ','ຊຳໃຕ້','ສົບເບົາ','ແອດ','ກວັນ','ຊ່ອນ'],
+  'ໄຊຍະບູລີ':['ບໍ່ແຕນ','ຫົງສາ','ແກ່ນທ້າວ','ຄອບ','ເງິນ','ປາກລາຍ','ພຽງ','ທົ່ງມີໄຊ','ໄຊຍະບູລີ','ຊຽງຮ່ອນ','ໄຊສະຖານ'],
+  'ຊຽງຂວາງ':['ແປກ (ໂພນສະຫວັນ)','ຄຳ','ໜອງແຮດ','ຄຸນ','ໝອກ','ພູກູດ','ຜາໄຊ'],
+  'ວຽງຈັນ':['ເຟືອງ','ຫີນເຫີບ','ກາສີ','ແກ້ວອຸດົມ','ແມດ','ໂພນໂຮງ','ທຸລະຄົມ','ວັງວຽງ','ວຽງຄຳ','ຊະນະຄາມ','ໝື່ນ'],
+  'ບໍລິຄຳໄຊ':['ປາກຊັນ','ທ່າພະບາດ','ປາກກະດິງ','ບໍລິຄັນ','ຄຳເກີດ','ວຽງທອງ','ໄຊຈຳພອນ'],
+  'ຄຳມ່ວນ':['ທ່າແຂກ','ມະຫາໄຊ','ໜອງບົກ','ຫີນບູນ','ຍົມມະລາດ','ບົວລະພາ','ນາກາຍ','ເຊບັ້ງໄຟ','ໄຊບົວທອງ','ຄູນຄຳ'],
+  'ສະຫວັນນະເຂດ':['ໄກສອນ ພົມວິຫານ','ອາດສະພັງທອງ','ພີນ','ເຊໂປນ','ນອງ','ທ່າປາງທອງ','ສອງຄອນ','ຈຳພອນ','ຊົນນະບູລີ','ໄຊບູລີ','ວິລະບູລີ','ອາດສະພອນ','ໄຊພູທອງ','ພະລານໄຊ'],
+  'ສາລະວັນ':['ສາລະວັນ','ຕຸ້ມລານ','ລະຄອນເພັງ','ວາປີ','ຄົງເຊໂດນ','ເລົ່າງາມ','ຕະໂອ້ຍ','ສະໝ້ວຍ'],
+  'ເຊກອງ':['ທ່າແຕງ','ລະມາມ','ກະລຶມ','ດັກຈຶງ'],
+  'ຈຳປາສັກ':['ປາກເຊ','ຊະນະສົມບູນ','ບາຈຽງຈະເລີນສຸກ','ປາກຊ່ອງ','ປະທຸມພອນ','ໂພນທອງ','ຈຳປາສັກ','ສຸຂຸມາ','ມູນລະປະໂມກ','ໂຂງ'],
+  'ອັດຕະປື':['ໄຊເຊດຖາ','ສາມັກຄີໄຊ','ສະໜາມໄຊ','ຊານໄຊ','ໄຊພູວົງ'],
+  'ໄຊສົມບູນ':['ອະນຸວົງ','ລ້ອງແຈ້ງ','ລ້ອງຊານ','ຮົ່ມ','ທ່າໂທມ']
 };
 
 // ══════════════════════════════════════
@@ -955,9 +998,10 @@ const LAO_GEO = {
 // ══════════════════════════════════════
 let S = {
   user:null, profile:null, company:null, role:null, page:'dashboard',
-  finPeriod:'month', adsPeriod:'7day', repPeriod:'7day',
+  finPeriod:'month', adsPeriod:'7day', repPeriod:'7day', salesPeriod:'7day', pendingPeriod:'7day',
   salesTab:'pending', dashPeriod:'all', pendingEditMode:false,
   navHistory:[],
+  customRanges:{dash:null,fin:null,ads:null,rep:null,sales:null,pending:null},
   db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}
 };
 let charts = {};
@@ -1327,12 +1371,19 @@ function renderPage(p){
 function setDashPeriod(p){
   S.dashPeriod=p;
   document.querySelectorAll('#dash-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('dash-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
   renderDash();
 }
 function getDashData(){
   const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
   let sales=S.db.sales, fin=S.db.finance;
-  if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);sales=sales.filter(s=>new Date(s.date)>=d7);fin=fin.filter(f=>new Date(f.date)>=d7);}
+  if(S.dashPeriod==='custom'&&S.customRanges.dash){
+    const {start,end}=S.customRanges.dash;
+    sales=sales.filter(s=>s.date>=start&&s.date<=end);
+    fin=fin.filter(f=>f.date>=start&&f.date<=end);
+  }
+  else if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);sales=sales.filter(s=>new Date(s.date)>=d7);fin=fin.filter(f=>new Date(f.date)>=d7);}
   else if(S.dashPeriod==='month'){sales=sales.filter(s=>s.date.startsWith(ym));fin=fin.filter(f=>f.date.startsWith(ym));}
   else if(S.dashPeriod==='year'){sales=sales.filter(s=>s.date.startsWith(yr));fin=fin.filter(f=>f.date.startsWith(yr));}
   return {sales,fin};
@@ -1340,7 +1391,11 @@ function getDashData(){
 function getDashPeriodAds(){
   const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
   let ads=S.db.ads;
-  if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);ads=ads.filter(a=>new Date(a.date)>=d7);}
+  if(S.dashPeriod==='custom'&&S.customRanges.dash){
+    const {start,end}=S.customRanges.dash;
+    ads=ads.filter(a=>a.date>=start&&a.date<=end);
+  }
+  else if(S.dashPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);ads=ads.filter(a=>new Date(a.date)>=d7);}
   else if(S.dashPeriod==='month') ads=ads.filter(a=>a.date.startsWith(ym));
   else if(S.dashPeriod==='year') ads=ads.filter(a=>a.date.startsWith(yr));
   return ads;
@@ -1415,7 +1470,7 @@ function renderPendingOrders(){
   const btnEdit=document.getElementById('btn-pending-edit');
   if(btnEdit) btnEdit.style.background=S.pendingEditMode?'var(--green)':''  , btnEdit.style.color=S.pendingEditMode?'#fff':'';
 
-  const data=S.db.sales.filter(s=>s.status==='ລໍຖ້າ');
+  const data=getPendingPeriodData();
   const countEl=document.getElementById('pending-count-label');
   if(countEl) countEl.textContent=data.length?`${data.length} ລາຍການ`:'';
   const container=document.getElementById('pending-orders-list');
@@ -1571,9 +1626,48 @@ function printShippingOrders(orders){
   const w=window.open('','_blank','width=500,height=400');
   if(w){w.document.write(html);w.document.close();}
 }
+function setSalesPeriod(p){
+  S.salesPeriod=p;
+  document.querySelectorAll('#sales-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('sales-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
+  renderSalesTable();
+}
+function getSalesPeriodData(){
+  const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
+  let data=S.db.sales;
+  if(S.salesPeriod==='custom'&&S.customRanges.sales){
+    const {start,end}=S.customRanges.sales;
+    data=data.filter(s=>s.date>=start&&s.date<=end);
+  }
+  else if(S.salesPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(s=>new Date(s.date)>=d7);}
+  else if(S.salesPeriod==='month') data=data.filter(s=>s.date.startsWith(ym));
+  else if(S.salesPeriod==='year') data=data.filter(s=>s.date.startsWith(yr));
+  return data;
+}
+function setPendingPeriod(p){
+  S.pendingPeriod=p;
+  document.querySelectorAll('#pending-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('pending-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
+  renderPendingOrders();
+}
+function getPendingPeriodData(){
+  const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
+  let data=S.db.sales.filter(s=>s.status==='ລໍຖ້າ');
+  if(S.pendingPeriod==='custom'&&S.customRanges.pending){
+    const {start,end}=S.customRanges.pending;
+    data=data.filter(s=>s.date>=start&&s.date<=end);
+  }
+  else if(S.pendingPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(s=>new Date(s.date)>=d7);}
+  else if(S.pendingPeriod==='month') data=data.filter(s=>s.date.startsWith(ym));
+  else if(S.pendingPeriod==='year') data=data.filter(s=>s.date.startsWith(yr));
+  return data;
+}
 function renderSalesTable(){
   const q=v('sales-search').toLowerCase(), sf=v('sales-sf');
-  const data=S.db.sales.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf));
+  let data=getSalesPeriodData();
+  data=data.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf));
   const tb=document.getElementById('sales-tbody');
   if(!data.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
   tb.innerHTML=data.map((s,i)=>{
@@ -1710,11 +1804,21 @@ function calcTotal(){
 // ══════════════════════════════════════
 //  FINANCE
 // ══════════════════════════════════════
-function setFinPeriod(p){S.finPeriod=p;document.querySelectorAll('#fin-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));renderFin();}
+function setFinPeriod(p){
+  S.finPeriod=p;
+  document.querySelectorAll('#fin-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('fin-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
+  renderFin();
+}
 function renderFin(){
   const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
   let data=S.db.finance;
-  if(S.finPeriod==='month') data=data.filter(f=>f.date.startsWith(ym));
+  if(S.finPeriod==='custom'&&S.customRanges.fin){
+    const {start,end}=S.customRanges.fin;
+    data=data.filter(f=>f.date>=start&&f.date<=end);
+  }
+  else if(S.finPeriod==='month') data=data.filter(f=>f.date.startsWith(ym));
   else if(S.finPeriod==='year') data=data.filter(f=>f.date.startsWith(yr));
   const finExp=data.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
   document.getElementById('fin-stats').innerHTML=`<div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value" style="color:var(--red)">${fmt(finExp)} ₭</div></div>`;
@@ -1871,11 +1975,21 @@ async function delProduct(id){
 // ══════════════════════════════════════
 //  ADS
 // ══════════════════════════════════════
-function setAdsPeriod(p){S.adsPeriod=p;document.querySelectorAll('#ads-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));renderAds();}
+function setAdsPeriod(p){
+  S.adsPeriod=p;
+  document.querySelectorAll('#ads-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('ads-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
+  renderAds();
+}
 function getAdsPeriodData(){
   const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
   let data=S.db.ads;
-  if(S.adsPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(a=>new Date(a.date)>=d7);}
+  if(S.adsPeriod==='custom'&&S.customRanges.ads){
+    const {start,end}=S.customRanges.ads;
+    data=data.filter(a=>a.date>=start&&a.date<=end);
+  }
+  else if(S.adsPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(a=>new Date(a.date)>=d7);}
   else if(S.adsPeriod==='month') data=data.filter(a=>a.date.startsWith(ym));
   else if(S.adsPeriod==='year') data=data.filter(a=>a.date.startsWith(yr));
   return data;
@@ -1954,11 +2068,21 @@ async function delAds(id){
 // ══════════════════════════════════════
 //  REPORTS
 // ══════════════════════════════════════
-function setRepPeriod(p){S.repPeriod=p;document.querySelectorAll('#rep-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));renderReports();}
+function setRepPeriod(p){
+  S.repPeriod=p;
+  document.querySelectorAll('#rep-period .period-tab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));
+  const btn=document.getElementById('rep-custom-btn');
+  if(btn) btn.classList.toggle('active',p==='custom');
+  renderReports();
+}
 function getRepData(){
   const now=new Date(), ym=now.toISOString().slice(0,7), yr=String(now.getFullYear());
   let data=S.db.sales.filter(s=>s.status==='ສຳເລັດ');
-  if(S.repPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(s=>new Date(s.date)>=d7);}
+  if(S.repPeriod==='custom'&&S.customRanges.rep){
+    const {start,end}=S.customRanges.rep;
+    data=data.filter(s=>s.date>=start&&s.date<=end);
+  }
+  else if(S.repPeriod==='7day'){const d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(s=>new Date(s.date)>=d7);}
   else if(S.repPeriod==='month') data=data.filter(s=>s.date.startsWith(ym));
   else if(S.repPeriod==='year') data=data.filter(s=>s.date.startsWith(yr));
   return data;
@@ -2105,8 +2229,7 @@ function renderShippingWithBranches(){
     const branchHTML=Object.keys(byProv).sort().map((prov,provIdx)=>{
       const pid='prov-'+scIdx+'-'+provIdx;
       const provBranches=byProv[prov];
-      // Helper: check if name already has prefix
-      const provDisp=prov.startsWith('ແຂວງ')?prov:'ແຂວງ'+prov;
+      const provDisp=prov;
       // Level 2: group by district inside province
       const byDist={};
       provBranches.forEach(b=>{const d=b.district||'ບໍ່ລະບຸເມືອງ';if(!byDist[d])byDist[d]=[];byDist[d].push(b);});
@@ -2499,7 +2622,7 @@ function buildBranchCombo(){
   list.innerHTML=branches.map(b=>`<div class="combo-item" onmousedown="pickComboVal('s-branch','${esc(b.name)}')">${esc(b.name)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
 }
 function filterCombo(type){
-  const input=type==='prod'?v('s-prod'):type==='branch'?v('s-branch'):v('s-ship');
+  const input=type==='prod'?v('s-prod'):type==='branch'?v('s-branch'):type==='prov'?v('s-prov'):type==='dist'?v('s-dist'):v('s-ship');
   const q=input.toLowerCase();
   const list=document.getElementById('combo-'+type);
   list.querySelectorAll('.combo-item').forEach(item=>{item.style.display=item.textContent.toLowerCase().includes(q)?'':'none';});
@@ -2520,7 +2643,8 @@ function pickProd(name,price,cost){sv('s-prod',name);sv('s-price',price);sv('s-c
 // ══════════════════════════════════════
 function getAllProvinces(){
   const custom=[...new Set(S.db.branches.map(b=>b.province).filter(Boolean))];
-  return [...new Set([...Object.keys(LAO_GEO),...custom])].sort();
+  const customClean=custom.map(p=>p.startsWith('ແຂວງ')?p.substring(4):p);
+  return [...new Set([...Object.keys(LAO_GEO),...customClean])].sort();
 }
 function getAllDistricts(prov){
   const std=LAO_GEO[prov]||[];
@@ -2534,6 +2658,40 @@ function populateProvinces(sel=''){
 function updateDistricts(sel=''){
   buildDistCombo();
   if(sel) sv('s-dist',sel);
+}
+
+// ══════════════════════════════════════
+//  DATE RANGE PICKER
+// ══════════════════════════════════════
+function openDateRangePicker(context){
+  sv('date-range-context',context);
+  const range=S.customRanges[context];
+  sv('date-range-start',range?range.start:today());
+  sv('date-range-end',range?range.end:today());
+  openModal('modal-date-range');
+}
+function applyDateRange(){
+  const context=v('date-range-context');
+  const start=v('date-range-start');
+  const end=v('date-range-end');
+  if(!start||!end){toast('ກະລຸນາເລືອກວັນທີ','error');return;}
+  if(start>end){toast('ວັນທີເລີ່ມຕ້ອງບໍ່ເກີນວັນທີສິ້ນສຸດ','error');return;}
+  S.customRanges[context]={start,end};
+  const btnId=context+'-custom-btn';
+  const btn=document.getElementById(btnId);
+  if(btn) btn.innerHTML=formatDateRange(start,end);
+  if(context==='dash') setDashPeriod('custom');
+  else if(context==='fin') setFinPeriod('custom');
+  else if(context==='ads') setAdsPeriod('custom');
+  else if(context==='rep') setRepPeriod('custom');
+  else if(context==='sales') setSalesPeriod('custom');
+  else if(context==='pending') setPendingPeriod('custom');
+  closeModal('modal-date-range');
+}
+function formatDateRange(start,end){
+  const d1=new Date(start), d2=new Date(end);
+  const fmt=d=>d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+  return fmt(d1)+'-'+fmt(d2);
 }
 
 // ══════════════════════════════════════
