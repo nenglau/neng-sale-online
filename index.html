@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2705,7 +2706,7 @@ function showExportMenu(btn,page){
   const rect=btn.getBoundingClientRect();
   menu.style.top=(rect.bottom+4)+'px'; menu.style.right=(window.innerWidth-rect.right)+'px';
   menu.innerHTML=`
-    <div onclick="exportCSV('${page}');this.parentElement.remove()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background=''">📄 Export CSV / Excel</div>
+    <div onclick="exportCSV('${page}');this.parentElement.remove()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background=''">📄 Export Excel</div>
     ${GAS_URL?`<div onclick="exportSheets('${page}');this.parentElement.remove()" style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background=''">📊 Sync Google Sheets</div>`:'<div style="padding:8px 16px;font-size:12px;color:var(--gray-500)">ຕັ້ງຄ່າ GAS URL ກ່ອນ</div>'}`;
   document.body.appendChild(menu);
   setTimeout(()=>document.addEventListener('click',function rm(){menu.remove();document.removeEventListener('click',rm);},{once:true}),100);
@@ -2713,16 +2714,34 @@ function showExportMenu(btn,page){
 function exportCSV(page){
   let hdr=[],rows=[];
   const db=S.db;
-  if(page==='sales'){hdr=['ວັນທີ','ສິນຄ້າ','ລູກຄ້າ','ເບີໂທ','ຊ່ອງທາງ','ຈຳ','ລາຄາ','ຕົ້ນທຶນ','ຫຼຸດ','ຍອດ','ກຳໄລ','ຂົນສົ່ງ','ແຂວງ','ເມືອງ','ສາຂາ','ສະຖານະ','ໝາຍເຫດ'];rows=db.sales.map(s=>[s.date,s.product_name||'',s.customer_name||'',s.customer_phone||'',s.channel||'',s.qty,s.price,s.cost,s.discount||0,s.qty*s.price-(s.discount||0),s.qty*(s.price-s.cost)-(s.discount||0),s.shipping_company||'',s.province||'',s.district||'',s.branch||'',s.status,s.note||'']);}
+  if(page==='sales'){
+    hdr=['ວັນທີ','ຊື່ລູກຄ້າ','ເບີໂທລູກຄ້າ','ລາຄາ','ແຫຼ່ງທີ່ມາ','ຈຳນວນຊິ້ນ','ບໍລິສັດຂົນ','ໄດ້ຮັບຂອງແລ້ວ'];
+    rows=db.sales.map(s=>[s.date,s.customer_name||'',s.customer_phone||'',s.price,s.channel||'',s.qty,s.shipping_company||'','']);
+  }
   else if(page==='finance'){hdr=['ວັນທີ','ລາຍການ','ໝວດ','ປະເພດ','ຈຳນວນ','ໝາຍເຫດ'];rows=db.finance.map(f=>[f.date,f.description,f.category,f.type,f.amount,f.note||'']);}
   else if(page==='products'){hdr=['ຊື່','SKU','ໝວດ','ລາຄາ','ຕົ້ນທຶນ','Stock','ສະຖານະ'];rows=db.products.map(p=>[p.name,p.sku||'',p.category,p.price,p.cost,p.stock||0,p.status]);}
   else if(page==='ads'||page==='reports'){hdr=['ວັນທີ','ແພລດຟອມ','ຊື່','ສິນຄ້າ','ງົບ','ໃຊ້ໄປ','ລາຍຮັບ','ROAS','ສະຖານະ'];rows=db.ads.map(a=>[a.date,a.platform,a.name,a.product_name||'',a.budget,a.spent,a.revenue,a.spent>0?(a.revenue/a.spent).toFixed(2):0,a.status]);}
-  const bom='﻿';
-  const csv=bom+[hdr,...rows].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`${S.company.name}_${page}_${today()}.csv`;a.click();
-  URL.revokeObjectURL(url); toast('Export ສຳເລັດ ✓','success');
+  
+  // Create Excel file using SheetJS
+  const wb=XLSX.utils.book_new();
+  const ws_data=[hdr,...rows];
+  const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  
+  // Set column widths for better readability
+  ws['!cols']=[
+    {wch:15}, // ວັນທີ
+    {wch:20}, // ຊື່ລູກຄ້າ
+    {wch:15}, // ເບີໂທລູກຄ້າ
+    {wch:10}, // ລາຄາ
+    {wch:12}, // ແຫຼ່ງທີ່ມາ
+    {wch:10}, // ຈຳນວນຊິ້ນ
+    {wch:15}, // ບໍລິສັດຂົນ
+    {wch:15}  // ໄດ້ຮັບຂອງແລ້ວ
+  ];
+  
+  XLSX.utils.book_append_sheet(wb,ws,'Orders');
+  XLSX.writeFile(wb,`${S.company.name}_${page}_${today()}.xlsx`);
+  toast('Export Excel ສຳເລັດ ✓','success');
 }
 async function exportSheets(page){
   if(!GAS_URL){toast('ກະລຸນາຕັ້ງຄ່າ GAS URL ໃນ ຕັ້ງຄ່າ → ຕັ້ງຄ່າບໍລິສັດ','error');return;}
