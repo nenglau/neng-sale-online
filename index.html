@@ -207,16 +207,16 @@ textarea.fc{resize:vertical;min-height:72px}
 .rep-city-pct{font-size:12px;font-weight:700;color:var(--green);min-width:48px;text-align:right}
 
 /* PERIOD TABS */
-.period-tabs{display:flex;background:var(--gray-100);border-radius:var(--radius);padding:2px;gap:1px}
-.period-tab{padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
+.period-tabs{display:flex;background:var(--gray-100);border-radius:var(--radius);padding:4px;gap:2px}
+.period-tab{padding:8px 16px;border-radius:8px;font-size:22px;font-weight:600;color:var(--gray-700);background:transparent;border:none;cursor:pointer;transition:.15s}
 .period-tab.active{background:var(--white);color:var(--green);box-shadow:var(--shadow-sm)}
-.period-tab.icon-only{padding:4px 6px;min-width:24px;display:flex;align-items:center;justify-content:center}
-.period-tab.icon-only i{font-size:12px}
+.period-tab.icon-only{padding:8px 12px;min-width:48px;display:flex;align-items:center;justify-content:center}
+.period-tab.icon-only i{font-size:24px}
 @media(max-width:768px){
   .period-tabs{padding:2px;gap:1px}
-  .period-tab{padding:3px 6px;font-size:10px}
-  .period-tab.icon-only{padding:3px 5px;min-width:22px}
-  .period-tab.icon-only i{font-size:11px}
+  .period-tab{padding:4px 8px;font-size:12px}
+  .period-tab.icon-only{padding:4px 6px;min-width:28px}
+  .period-tab.icon-only i{font-size:14px}
 }
 
 /* SALES TABS — fixed bottom */
@@ -246,6 +246,10 @@ textarea.fc{resize:vertical;min-height:72px}
 .order-field strong{color:var(--gray-900)}
 .order-field.highlight{color:var(--green);font-weight:700}
 .order-shipping-tag{display:inline-flex;align-items:center;gap:4px;background:var(--blue-light);color:var(--blue);border-radius:var(--radius);padding:4px 12px;font-size:12px;font-weight:600}
+.order-channel-tag{display:inline-flex;align-items:center;gap:4px;border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:600}
+.order-channel-tag.whatsapp{background:#e8f5e9;color:#128c7e}
+.order-channel-tag.facebook{background:#e3f2fd;color:#1877f2}
+.order-channel-tag.tiktok{background:#fce4ec;color:#000000}
 .order-card-actions{display:flex;gap:8px;align-items:center}
 .order-card-actions .btn-icon{width:32px;height:32px;font-size:13px}
 
@@ -532,7 +536,7 @@ textarea.fc{resize:vertical;min-height:72px}
             </div>
             <div class="table-wrap"><table><thead><tr>
               <th style="width:32px"><input type="checkbox" id="sales-chk-all" onchange="toggleSelectAllSales(this.checked)" style="cursor:pointer"></th>
-              <th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ລູກຄ້າ</th><th>ຈຳ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຂົນສົ່ງ</th><th>ຈັດການ</th>
+              <th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ຊ່ອງທາງ</th><th>ຂົນສົ່ງ</th><th>ລູກຄ້າ</th><th>ຈຳນວນ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຈັດການ</th>
             </tr></thead><tbody id="sales-tbody"></tbody></table></div>
           </div>
         </div>
@@ -1497,6 +1501,7 @@ function renderPendingOrders(){
         <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:12px"></i> ${fmtDate(s.date)}</div>
         <div class="order-field"><strong style="font-size:14px">${esc(s.customer_name||'—')}</strong></div>
         <div class="order-field" style="font-weight:700;font-size:15px;color:var(--blue)">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px"></i> ${esc(s.customer_phone)}`:'—'}</div>
+        <div class="order-field">${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}</div>
         <div class="order-field highlight"><i class="fa fa-box" style="font-size:12px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
         <div class="order-field"><strong style="color:var(--green-dark);font-size:15px">${fmt(tot)} ₭</strong></div>
         <div class="order-card-actions">
@@ -1505,7 +1510,7 @@ function renderPendingOrders(){
         </div>
       </div>
       ${shipLine.length?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        ${s.shipping_company?`<span class="order-shipping-tag"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
+        ${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)}"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
         ${shipLine.length?`<span style="font-size:13px;color:var(--gray-700);font-weight:600"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
       </div>`:''}
     </div>`;
@@ -1670,11 +1675,13 @@ function renderSalesTable(){
   let data=getSalesPeriodData();
   data=data.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf));
   const tb=document.getElementById('sales-tbody');
-  if(!data.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
+  if(!data.length){tb.innerHTML='<tr><td colspan="13"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
   tb.innerHTML=data.map((s,i)=>{
     const tot=s.qty*s.price-(s.discount||0), pr=s.qty*(s.price-s.cost)-(s.discount||0);
     return `<tr><td><input type="checkbox" class="sale-chk" data-id="${s.id}" onchange="updateSalesBulkBar()" style="cursor:pointer"></td>
     <td style="color:var(--gray-500)">${i+1}</td><td>${fmtDate(s.date)}</td><td style="font-weight:700">${esc(s.product_name||'-')}</td>
+    <td>${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:'-'}</td>
+    <td>${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)};font-size:11px;padding:2px 8px">${esc(s.shipping_company)}</span>`:'-'}</td>
     <td>
       <div style="font-weight:600;font-size:14px">${esc(s.customer_name||'-')}</div>
       <div style="font-weight:700;font-size:15px;color:var(--blue);margin-top:4px">${s.customer_phone||'-'}</div>
@@ -1687,7 +1694,7 @@ function renderSalesTable(){
     <td style="color:var(--orange)">${s.discount?fmt(s.discount)+' ₭':'-'}</td>
     <td style="font-weight:700">${fmt(tot)} ₭</td>
     <td style="font-weight:700;color:${pr>=0?'var(--green)':'var(--red)'}">${fmt(pr)} ₭</td>
-    <td>${badge(s.status)}</td><td style="font-size:12px">${esc(s.shipping_company||'-')}</td>
+    <td>${badge(s.status)}</td>
     <td><button class="btn-icon edit" onclick="editSale('${s.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delSale('${s.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
   }).join('');
   // reset header checkbox
@@ -2739,6 +2746,49 @@ function exportCSV(page){
     {wch:15}  // ໄດ້ຮັບຂອງແລ້ວ
   ];
   
+  // Add color coding for sales page
+  if(page==='sales'){
+    const range=XLSX.utils.decode_range(ws['!ref']);
+    for(let R=range.s.r+1;R<=range.e.r;R++){
+      // Channel column (index 4, column E)
+      const channelCell=ws[XLSX.utils.encode_cell({r:R,c:4})];
+      if(channelCell){
+        const channel=channelCell.v;
+        const color=getChannelColor(channel);
+        if(!channelCell.s) channelCell.s={};
+        channelCell.s.fill={fgColor:{rgb:color.replace('#','')}};
+      }
+      // Shipping company column (index 6, column G)
+      const shipCell=ws[XLSX.utils.encode_cell({r:R,c:6})];
+      if(shipCell){
+        const ship=shipCell.v;
+        const hslColor=getShippingCompanyColor(ship);
+        const rgb=hslToRgb(hslColor);
+        if(!shipCell.s) shipCell.s={};
+        shipCell.s.fill={fgColor:{rgb:rgb}};
+      }
+      // Alternating column colors
+      for(let C=range.s.c;C<=range.e.c;C++){
+        const cell=ws[XLSX.utils.encode_cell({r:R,c:C})];
+        if(cell){
+          if(!cell.s) cell.s={};
+          if(C%2===0){
+            cell.s.fill={fgColor:{rgb:'f5f5f5'}};
+          }
+        }
+      }
+    }
+    // Header row styling
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const headerCell=ws[XLSX.utils.encode_cell({r:range.s.r,c:C})];
+      if(headerCell){
+        if(!headerCell.s) headerCell.s={};
+        headerCell.s.fill={fgColor:{rgb:'1a1d27'}};
+        headerCell.s.font={color:{rgb:'ffffff'},bold:true};
+      }
+    }
+  }
+  
   XLSX.utils.book_append_sheet(wb,ws,'Orders');
   XLSX.writeFile(wb,`${S.company.name}_${page}_${today()}.xlsx`);
   toast('Export Excel ສຳເລັດ ✓','success');
@@ -2754,6 +2804,75 @@ async function exportSheets(page){
     const r=await res.json();
     r.status==='ok'?toast('Sync Google Sheets ສຳເລັດ ✓','success'):toast('Error: '+r.message,'error');
   }catch(e){toast('ບໍ່ສາມາດ connect: '+e.message,'error');}
+}
+
+// ══════════════════════════════════════
+//  COLOR CODING HELPERS
+// ══════════════════════════════════════
+function getShippingCompanyColor(name){
+  if(!name) return '#e0e0e0';
+  // Generate consistent color based on name hash
+  let hash=0;
+  for(let i=0;i<name.length;i++){
+    hash=name.charCodeAt(i)+((hash<<5)-hash);
+  }
+  const hue=Math.abs(hash)%360;
+  return `hsl(${hue},70%,90%)`;
+}
+function getShippingCompanyTextColor(name){
+  if(!name) return '#616161';
+  let hash=0;
+  for(let i=0;i<name.length;i++){
+    hash=name.charCodeAt(i)+((hash<<5)-hash);
+  }
+  const hue=Math.abs(hash)%360;
+  return `hsl(${hue},70%,30%)`;
+}
+function getChannelClass(channel){
+  if(!channel) return '';
+  const lower=channel.toLowerCase();
+  if(lower.includes('whatsapp')) return 'whatsapp';
+  if(lower.includes('facebook')) return 'facebook';
+  if(lower.includes('tiktok')) return 'tiktok';
+  return '';
+}
+function getChannelColor(channel){
+  if(!channel) return '#e0e0e0';
+  const lower=channel.toLowerCase();
+  if(lower.includes('whatsapp')) return '#e8f5e9';
+  if(lower.includes('facebook')) return '#e3f2fd';
+  if(lower.includes('tiktok')) return '#fce4ec';
+  return '#f5f5f5';
+}
+function hslToRgb(hsl){
+  const match=hsl.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+  if(!match) return 'f5f5f5';
+  let h=parseInt(match[1])/360;
+  const s=parseInt(match[2])/100;
+  const l=parseInt(match[3])/100;
+  let r,g,b;
+  if(s===0){
+    r=g=b=l;
+  }else{
+    const hue2rgb=(p,q,t)=>{
+      if(t<0) t+=1;
+      if(t>1) t-=1;
+      if(t<1/6) return p+(q-p)*6*t;
+      if(t<1/2) return q;
+      if(t<2/3) return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const q=l<0.5?l*(1+s):l+s-l*s;
+    const p=2*l-q;
+    r=hue2rgb(p,q,h+1/3);
+    g=hue2rgb(p,q,h);
+    b=hue2rgb(p,q,h-1/3);
+  }
+  const toHex=x=>{
+    const hex=Math.round(x*255).toString(16);
+    return hex.length===1?'0'+hex:hex;
+  };
+  return toHex(r)+toHex(g)+toHex(b);
 }
 
 // ══════════════════════════════════════
