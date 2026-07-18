@@ -465,6 +465,9 @@ textarea.fc{resize:vertical;min-height:72px}
             <button class="period-tab active" data-p="all" onclick="setDashPeriod('all')">ທັງໝົດ</button>
             <button class="period-tab icon-only" id="dash-custom-btn" onclick="openDateRangePicker('dash')"><i class="fa fa-calendar"></i></button>
           </div>
+          <select class="fc" id="dash-prod-filter" onchange="renderDash()" style="width:150px;margin-left:10px">
+            <option value="">ທຸກລາຍການ</option>
+          </select>
         </div>
         <div class="stat-grid" id="dash-stats"></div>
         <div class="chart-grid">
@@ -589,7 +592,12 @@ textarea.fc{resize:vertical;min-height:72px}
 
       <!-- ADS -->
       <div id="page-ads" class="page">
-        <div class="stat-grid" id="ads-stats"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div class="stat-grid" id="ads-stats" style="flex:1"></div>
+          <select class="fc" id="ads-prod-filter" onchange="renderAds()" style="width:150px">
+            <option value="">ທຸກລາຍການ</option>
+          </select>
+        </div>
         <div class="chart-grid" style="margin-bottom:20px">
           <div class="chart-card">
             <div class="chart-header">
@@ -608,9 +616,6 @@ textarea.fc{resize:vertical;min-height:72px}
           <div class="panel-header">
             <span class="panel-title">ແຄມເປຍໂຄສະນາ</span>
             <div class="filter-bar">
-              <select class="fc" id="ads-prod-filter" onchange="renderAds()" style="width:150px">
-                <option value="">ສິນຄ້າທັງໝົດ</option>
-              </select>
               <button class="btn btn-green" onclick="openAdsModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
             </div>
           </div>
@@ -622,12 +627,17 @@ textarea.fc{resize:vertical;min-height:72px}
       <div id="page-reports" class="page">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <span style="font-size:16px;font-weight:700">ລາຍງານ & ສະຖິຕິ</span>
-          <div class="period-tabs" id="rep-period">
-            <button class="period-tab active" data-p="7day" onclick="setRepPeriod('7day')">7 ວັນ</button>
-            <button class="period-tab" data-p="month" onclick="setRepPeriod('month')">ເດືອນ</button>
-            <button class="period-tab" data-p="year" onclick="setRepPeriod('year')">ປີ</button>
-            <button class="period-tab" data-p="all" onclick="setRepPeriod('all')">ທັງໝົດ</button>
-            <button class="period-tab icon-only" id="rep-custom-btn" onclick="openDateRangePicker('rep')"><i class="fa fa-calendar"></i></button>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="period-tabs" id="rep-period">
+              <button class="period-tab active" data-p="7day" onclick="setRepPeriod('7day')">7 ວັນ</button>
+              <button class="period-tab" data-p="month" onclick="setRepPeriod('month')">ເດືອນ</button>
+              <button class="period-tab" data-p="year" onclick="setRepPeriod('year')">ປີ</button>
+              <button class="period-tab" data-p="all" onclick="setRepPeriod('all')">ທັງໝົດ</button>
+              <button class="period-tab icon-only" id="rep-custom-btn" onclick="openDateRangePicker('rep')"><i class="fa fa-calendar"></i></button>
+            </div>
+            <select class="fc" id="rep-prod-filter" onchange="renderReports()" style="width:150px">
+              <option value="">ທຸກລາຍການ</option>
+            </select>
           </div>
         </div>
         <div class="stat-grid" id="rep-stats"></div>
@@ -843,7 +853,7 @@ textarea.fc{resize:vertical;min-height:72px}
         <div><label>ແພລດຟອມ</label><select class="fc" id="a-platform"><option>Facebook</option><option>TikTok</option></select></div>
         <div><label>ຊື່ແຄມເປຍ *</label><input class="fc" type="text" id="a-name" placeholder="Campaign name"></div>
       </div>
-      <div><label>ສິນຄ້າ</label><input class="fc" type="text" id="a-prod" placeholder="ສິນຄ້າທີ່ໂຄສະນາ"></div>
+      <div><label>ສິນຄ້າ</label><select class="fc" id="a-prod"><option value="">-- ເລືອກສິນຄ້າ --</option></select></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-ads')">ຍົກເລີກ</button>
@@ -1267,7 +1277,25 @@ function setupApp(){
   if(c.logo){logoEl.innerHTML=`<img src="${c.logo}">`;}
   else{logoEl.textContent=c.name[0]||'🌿';}
   populateProvinces();
+  populateProductFilters();
   if(window.innerWidth<=768) document.getElementById('menu-btn').style.display='block';
+}
+function populateProductFilters(){
+  const filters=['dash-prod-filter','ads-prod-filter','rep-prod-filter'];
+  filters.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.innerHTML='<option value="">ທຸກລາຍການ</option>';
+      if(S.db.products && S.db.products.length){
+        S.db.products.forEach(p=>{
+          const opt=document.createElement('option');
+          opt.value=p.name;
+          opt.textContent=p.name;
+          el.appendChild(opt);
+        });
+      }
+    }
+  });
 }
 function maskEmail(email){
   if(!email||!email.includes('@')) return email;
@@ -1407,8 +1435,10 @@ function getDashPeriodAds(){
 }
 function renderDash(){
   const {sales,fin}=getDashData();
-  const rev=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
-  const prof=sales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
+  const prodFilter=v('dash-prod-filter');
+  const filteredSales=prodFilter?sales.filter(s=>s.product_name===prodFilter):sales;
+  const rev=filteredSales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
+  const prof=filteredSales.filter(s=>s.status==='ສຳເລັດ').reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
   const finExp=fin.filter(f=>f.type==='ລາຍຈ່າຍ').reduce((a,f)=>a+f.amount,0);
   const adsBudget=getDashPeriodAds().reduce((a,x)=>a+(x.budget||0),0);
   const exp=finExp+adsBudget;
@@ -1423,9 +1453,9 @@ function renderDash(){
     <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">order ຍົກເລີກ</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value">${fmt(exp)}</div><div class="stat-sub">₭</div></div>`;
   const tbody=document.getElementById('dash-recent');
-  const rec=sales.slice(0,10);
+  const rec=filteredSales.slice(0,10);
   tbody.innerHTML=rec.length?rec.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${esc(s.product_name||'-')}</td><td>${esc(s.customer_name||'-')}</td><td>${s.qty}</td><td style="font-weight:700">${fmt(s.qty*s.price-(s.discount||0))} ₭</td><td>${badge(s.status)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-500)">ຍັງບໍ່ມີຂໍ້ມູນ</td></tr>';
-  draw7Days(sales); drawChannel(sales);
+  draw7Days(filteredSales); drawChannel(filteredSales);
 }
 function draw7Days(filteredSales){
   const ctx=document.getElementById('chart-sales7'); if(!ctx) return;
@@ -2006,7 +2036,7 @@ function renderAds(){
   const periodData=getAdsPeriodData();
   const prodFilter=v('ads-prod-filter');
   const data=prodFilter?periodData.filter(a=>a.product_name===prodFilter):periodData;
-  const budget=periodData.reduce((a,x)=>a+(x.budget||0),0);
+  const budget=data.reduce((a,x)=>a+(x.budget||0),0);
   document.getElementById('ads-stats').innerHTML=`<div class="stat-card purple"><span class="stat-icon">💰</span><div class="stat-label">ງົບໂຄສະນາລວມ</div><div class="stat-value">${fmt(budget)} ₭</div></div>`;
   const tb=document.getElementById('ads-tbody');
   if(!data.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><i class="fa fa-bullhorn"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';return;}
@@ -2019,11 +2049,6 @@ function renderAds(){
     <td style="font-weight:700;color:${r>=2?'var(--green)':'var(--orange)'}">${r}x</td>
     <td><button class="btn-icon edit" onclick="editAds('${a.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delAds('${a.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
   }).join('');
-  const pf=document.getElementById('ads-prod-filter');
-  if(pf){
-    const prods=[...new Set(S.db.ads.map(a=>a.product_name).filter(Boolean))];
-    pf.innerHTML='<option value="">ສິນຄ້າທັງໝົດ</option>'+prods.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
-  }
   drawAdsChart(data);
 }
 function drawAdsChart(data){
@@ -2041,11 +2066,43 @@ function drawAdsChart(data){
   }
   dc('ads'); charts['ads']=new Chart(ctx,{type:'line',data:{labels:L,datasets:[{label:'ງົບ',data:D,backgroundColor:'rgba(156,39,176,.2)',borderColor:'#9c27b0',borderWidth:2,fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v)}}}}});
 }
-function openAdsModal(){sv('ads-id','');document.getElementById('ads-title').textContent='ເພີ່ມແຄມເປຍ';sv('a-date',today());sv('a-budget','');sv('a-platform','Facebook');sv('a-name','');sv('a-prod','');openModal('modal-ads');}
+function openAdsModal(){
+  sv('ads-id','');
+  document.getElementById('ads-title').textContent='ເພີ່ມແຄມເປຍ';
+  sv('a-date',today());
+  sv('a-budget','');
+  sv('a-platform','Facebook');
+  sv('a-name','');
+  // Load products into dropdown
+  const prodSelect=document.getElementById('a-prod');
+  prodSelect.innerHTML='<option value="">-- ເລືອກສິນຄ້າ --</option>';
+  if(S.db.products && S.db.products.length){
+    S.db.products.forEach(p=>{
+      const opt=document.createElement('option');
+      opt.value=p.name;
+      opt.textContent=p.name;
+      prodSelect.appendChild(opt);
+    });
+  }
+  sv('a-prod','');
+  openModal('modal-ads');
+}
 function editAds(id){
   const a=S.db.ads.find(x=>x.id===id); if(!a) return;
   document.getElementById('ads-title').textContent='ແກ້ໄຂ';
-  sv('ads-id',id);sv('a-date',a.date);sv('a-budget',a.budget);sv('a-platform',a.platform);sv('a-name',a.name);sv('a-prod',a.product_name||'');
+  sv('ads-id',id);sv('a-date',a.date);sv('a-budget',a.budget);sv('a-platform',a.platform);sv('a-name',a.name);
+  // Load products into dropdown
+  const prodSelect=document.getElementById('a-prod');
+  prodSelect.innerHTML='<option value="">-- ເລືອກສິນຄ້າ --</option>';
+  if(S.db.products && S.db.products.length){
+    S.db.products.forEach(p=>{
+      const opt=document.createElement('option');
+      opt.value=p.name;
+      opt.textContent=p.name;
+      prodSelect.appendChild(opt);
+    });
+  }
+  sv('a-prod',a.product_name||'');
   openModal('modal-ads');
 }
 async function saveAds(){
@@ -2097,19 +2154,21 @@ function getRepData(){
 }
 function renderReports(){
   const data=getRepData();
-  const rev=data.reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
-  const prof=data.reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
-  const qty=data.reduce((a,s)=>a+s.qty,0);
+  const prodFilter=v('rep-prod-filter');
+  const filteredData=prodFilter?data.filter(s=>s.product_name===prodFilter):data;
+  const rev=filteredData.reduce((a,s)=>a+(s.qty*s.price-(s.discount||0)),0);
+  const prof=filteredData.reduce((a,s)=>a+(s.qty*(s.price-s.cost)-(s.discount||0)),0);
+  const qty=filteredData.reduce((a,s)=>a+s.qty,0);
   const margin=rev>0?((prof/rev)*100).toFixed(1):0;
   document.getElementById('rep-stats').innerHTML=`
     <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ຍອດຂາຍ</div><div class="stat-value">${fmt(rev)} ₭</div></div>
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)} ₭</div></div>
     <div class="stat-card orange"><span class="stat-icon">📦</span><div class="stat-label">ຈຳນວນ</div><div class="stat-value">${qty} <span style="font-size:14px">ຊິ້ນ</span></div></div>
     <div class="stat-card blue"><span class="stat-icon">%</span><div class="stat-label">Margin</div><div class="stat-value">${margin}%</div></div>`;
-  drawRepSales(data); renderRepCities(data);
+  drawRepSales(filteredData); renderRepCities(filteredData);
   // Top products
   const pm={};
-  data.forEach(s=>{const k=s.product_name||'ອື່ນໆ';if(!pm[k])pm[k]={qty:0,rev:0,prof:0};pm[k].qty+=s.qty;pm[k].rev+=s.qty*s.price-(s.discount||0);pm[k].prof+=s.qty*(s.price-s.cost)-(s.discount||0);});
+  filteredData.forEach(s=>{const k=s.product_name||'ອື່ນໆ';if(!pm[k])pm[k]={qty:0,rev:0,prof:0};pm[k].qty+=s.qty;pm[k].rev+=s.qty*s.price-(s.discount||0);pm[k].prof+=s.qty*(s.price-s.cost)-(s.discount||0);});
   const top=Object.entries(pm).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
   const tb=document.getElementById('rep-top');
   tb.innerHTML=top.length?top.map(([name,d],i)=>`<tr><td style="font-weight:700;color:var(--green)">${i+1}</td><td style="font-weight:600">${esc(name)}</td><td style="text-align:center">${d.qty}</td><td style="font-weight:700">${fmt(d.rev)} ₭</td><td style="color:var(--green);font-weight:600">${fmt(d.prof)} ₭</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--gray-500)">ຍັງບໍ່ມີຂໍ້ມູນ</td></tr>';
