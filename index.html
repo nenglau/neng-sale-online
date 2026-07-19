@@ -2697,9 +2697,18 @@ function openBranchAllCombo(){
   const list=document.getElementById('combo-branch');
   if(!list) return;
   
-  // Show all branches from system_branches
+  // Require shipping company to be selected
+  const shipName=v('s-ship').trim();
+  if(!shipName){
+    list.innerHTML='<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງກ່ອນ</div>';
+    openCombo('branch');
+    return;
+  }
+  
+  // Show branches filtered by shipping company
   const allBranches=S.db.systemBranches||[];
-  list.innerHTML=allBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.shipping_company)}, ${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
+  const filtered=allBranches.filter(b=>b.shipping_company===shipName);
+  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
   openCombo('branch');
 }
 function filterBranchAll(){
@@ -2707,10 +2716,18 @@ function filterBranchAll(){
   const list=document.getElementById('combo-branch');
   if(!list) return;
   
-  // Filter all branches by name
+  // Require shipping company to be selected
+  const shipName=v('s-ship').trim();
+  if(!shipName){
+    list.innerHTML='<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງກ່ອນ</div>';
+    openCombo('branch');
+    return;
+  }
+  
+  // Filter branches by name and shipping company
   const allBranches=S.db.systemBranches||[];
-  const filtered=allBranches.filter(b=>b.name.toLowerCase().includes(input));
-  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.shipping_company)}, ${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
+  const filtered=allBranches.filter(b=>b.shipping_company===shipName && b.name.toLowerCase().includes(input));
+  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
 }
 function pickBranchWithLocation(branchName,province,district,shippingCompany){
