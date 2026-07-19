@@ -46,8 +46,8 @@ CREATE POLICY "Public insert access" ON system_branches
 --  IMPORT BRANCHES FROM MY BRANCHES.MD
 -- ══════════════════════════════════════
 
--- Clear existing data (optional - remove if you want to keep existing data)
--- TRUNCATE TABLE system_branches;
+-- Clear existing data with empty shipping_company
+DELETE FROM system_branches WHERE shipping_company = '' OR shipping_company IS NULL;
 
 -- Insert branches from my branches.md
 INSERT INTO system_branches (province, district, name, shipping_company) VALUES
