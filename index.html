@@ -424,7 +424,6 @@ textarea.fc{resize:vertical;min-height:72px}
       <div class="nav-item" id="nav-settings-toggle" onclick="toggleSettings()"><i class="fa fa-cog"></i> ການຕັ້ງຄ່າ<i class="fa fa-chevron-right nav-arrow" id="settings-arrow"></i></div>
       <div class="nav-submenu" id="settings-submenu" style="display:none">
         <div class="nav-subitem" data-page="co-info" onclick="navigate('co-info')"><i class="fa fa-building"></i> ຂໍ້ມູນບໍລິສັດ</div>
-        <div class="nav-subitem" data-page="co-shipping" onclick="navigate('co-shipping')"><i class="fa fa-truck"></i> ບໍລິສັດຂົນສົ່ງ</div>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -713,12 +712,9 @@ textarea.fc{resize:vertical;min-height:72px}
             </div>
           </div>
           <div><label>ສາຂາ / ທີ່ຢູ່</label>
-            <div style="display:flex;gap:8px">
-              <div class="combo-wrap" style="flex:1">
-                <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterBranchAll()" onfocus="openBranchAllCombo()" onblur="setTimeout(()=>closeCombo('branch'),200)">
-                <div class="combo-list" id="combo-branch"></div>
-              </div>
-              <button class="btn btn-green btn-sm" onclick="openAddBranchFromSale()" style="height:42px;min-width:42px" title="ເພີ່ມສາຂາ">+</button>
+            <div class="combo-wrap">
+              <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterBranchAll()" onfocus="openBranchAllCombo()" onblur="setTimeout(()=>closeCombo('branch'),200)">
+              <div class="combo-list" id="combo-branch"></div>
             </div>
           </div>
         </div>
@@ -1807,8 +1803,8 @@ async function saveSale(){
   const prov=v('s-prov').trim();
   const dist=v('s-dist').trim();
   // Add branch to system_branches if not exists (shared across all users)
-  if(branch && prov && dist && !S.db.systemBranches.find(b=>b.province===prov && b.district===dist && b.name===branch)){
-    const{data:nb}=await sb.from('system_branches').insert({province:prov,district:dist,name:branch}).select().single();
+  if(branch && prov && dist && ship && !S.db.systemBranches.find(b=>b.province===prov && b.district===dist && b.name===branch && b.shipping_company===ship)){
+    const{data:nb}=await sb.from('system_branches').insert({province:prov,district:dist,name:branch,shipping_company:ship}).select().single();
     if(nb){S.db.systemBranches.push(nb); S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));}
   }
   const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
@@ -2685,6 +2681,7 @@ function pickDist(name){
 function buildBranchCombo(){
   const provName=v('s-prov').trim();
   const distName=v('s-dist').trim();
+  const shipName=v('s-ship').trim();
   const list=document.getElementById('combo-branch');
   if(!list) return;
   
@@ -2692,8 +2689,9 @@ function buildBranchCombo(){
   let systemBranches=S.db.systemBranches||[];
   if(provName) systemBranches=systemBranches.filter(b=>b.province===provName);
   if(distName) systemBranches=systemBranches.filter(b=>b.district===distName);
+  if(shipName) systemBranches=systemBranches.filter(b=>b.shipping_company===shipName);
   
-  list.innerHTML=systemBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
+  list.innerHTML=systemBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.shipping_company)}, ${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
 }
 function openBranchAllCombo(){
   const list=document.getElementById('combo-branch');
@@ -2701,7 +2699,7 @@ function openBranchAllCombo(){
   
   // Show all branches from system_branches
   const allBranches=S.db.systemBranches||[];
-  list.innerHTML=allBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
+  list.innerHTML=allBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.shipping_company)}, ${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
   openCombo('branch');
 }
 function filterBranchAll(){
@@ -2712,13 +2710,14 @@ function filterBranchAll(){
   // Filter all branches by name
   const allBranches=S.db.systemBranches||[];
   const filtered=allBranches.filter(b=>b.name.toLowerCase().includes(input));
-  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
+  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.shipping_company)}, ${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
 }
-function pickBranchWithLocation(branchName,province,district){
+function pickBranchWithLocation(branchName,province,district,shippingCompany){
   sv('s-branch',branchName);
   sv('s-prov',province);
   sv('s-dist',district);
+  if(shippingCompany) sv('s-ship',shippingCompany);
   closeCombo('branch');
 }
 function filterCombo(type){
