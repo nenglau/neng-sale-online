@@ -715,7 +715,7 @@ textarea.fc{resize:vertical;min-height:72px}
           <div><label>ສາຂາ / ທີ່ຢູ່</label>
             <div style="display:flex;gap:8px">
               <div class="combo-wrap" style="flex:1">
-                <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterCombo('branch')" onfocus="openCombo('branch')" onblur="setTimeout(()=>closeCombo('branch'),200)">
+                <input class="fc" type="text" id="s-branch" placeholder="ສາຂາ ຫຼື ທີ່ຢູ່" autocomplete="off" oninput="filterBranchAll()" onfocus="openBranchAllCombo()" onblur="setTimeout(()=>closeCombo('branch'),200)">
                 <div class="combo-list" id="combo-branch"></div>
               </div>
               <button class="btn btn-green btn-sm" onclick="openAddBranchFromSale()" style="height:42px;min-width:42px" title="ເພີ່ມສາຂາ">+</button>
@@ -1017,7 +1017,7 @@ let S = {
   salesTab:'pending', dashPeriod:'all', pendingEditMode:false,
   navHistory:[],
   customRanges:{dash:null,fin:null,ads:null,rep:null,sales:null,pending:null},
-  db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}
+  db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[],systemBranches:[]}
 };
 let charts = {};
 
@@ -1114,7 +1114,7 @@ async function checkRecoveryToken(){
 async function doLogout(){
   await sb.auth.signOut();
   try{localStorage.removeItem('hg_company');localStorage.removeItem('hg_page');}catch(e){}
-  S={...S,user:null,profile:null,company:null,role:null,db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[]}};
+  S={...S,user:null,profile:null,company:null,role:null,db:{sales:[],finance:[],products:[],ads:[],members:[],shipCos:[],branches:[],systemBranches:[]}};
   showScreen('auth-screen');
 }
 async function forceRefresh(){
@@ -1248,18 +1248,19 @@ document.getElementById('confirm-dialog').onclick=(e)=>{
 // ══════════════════════════════════════
 async function loadData(){
   const cid=S.company.id;
-  const[sa,fi,pr,ad,mb,sc,br]=await Promise.all([
+  const[sa,fi,pr,ad,mb,sc,br,sbr]=await Promise.all([
     sb.from('sales').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('finance').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('products').select('*').eq('company_id',cid).order('name'),
     sb.from('ads').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('company_members').select('*, profiles(name,email)').eq('company_id',cid),
     sb.from('shipping_companies').select('*').eq('company_id',cid).order('name'),
-    sb.from('branches').select('*').eq('company_id',cid).order('name')
+    sb.from('branches').select('*').eq('company_id',cid).order('name'),
+    sb.from('system_branches').select('*').order('name')
   ]);
   S.db.sales=sa.data||[]; S.db.finance=fi.data||[]; S.db.products=pr.data||[];
   S.db.ads=ad.data||[]; S.db.members=mb.data||[]; S.db.shipCos=sc.data||[];
-  S.db.branches=br.data||[];
+  S.db.branches=br.data||[]; S.db.systemBranches=sbr.data||[];
 }
 async function refreshData(){await loadData(); renderPage(S.page);}
 
@@ -1803,9 +1804,12 @@ async function saveSale(){
     if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
   }
   const branch=v('s-branch').trim();
-  if(branch && shipCoObj && !S.db.branches.find(b=>b.shipping_company_id===shipCoObj.id && b.name===branch)){
-    const{data:nb}=await sb.from('branches').insert({company_id:S.company.id,shipping_company_id:shipCoObj.id,name:branch}).select().single();
-    if(nb){S.db.branches.push(nb); S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));}
+  const prov=v('s-prov').trim();
+  const dist=v('s-dist').trim();
+  // Add branch to system_branches if not exists (shared across all users)
+  if(branch && prov && dist && !S.db.systemBranches.find(b=>b.province===prov && b.district===dist && b.name===branch)){
+    const{data:nb}=await sb.from('system_branches').insert({province:prov,district:dist,name:branch}).select().single();
+    if(nb){S.db.systemBranches.push(nb); S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));}
   }
   const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
     customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,
@@ -2679,14 +2683,43 @@ function pickDist(name){
   buildBranchCombo(); closeCombo('dist');
 }
 function buildBranchCombo(){
-  const shipName=v('s-ship').trim();
+  const provName=v('s-prov').trim();
   const distName=v('s-dist').trim();
-  const sc=S.db.shipCos.find(x=>x.name===shipName);
   const list=document.getElementById('combo-branch');
   if(!list) return;
-  let branches=sc?S.db.branches.filter(b=>b.shipping_company_id===sc.id):[];
-  if(distName) branches=branches.filter(b=>b.district===distName);
-  list.innerHTML=branches.map(b=>`<div class="combo-item" onmousedown="pickComboVal('s-branch','${esc(b.name)}')">${esc(b.name)}</div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
+  
+  // Get branches from system_branches (shared across all users)
+  let systemBranches=S.db.systemBranches||[];
+  if(provName) systemBranches=systemBranches.filter(b=>b.province===provName);
+  if(distName) systemBranches=systemBranches.filter(b=>b.district===distName);
+  
+  list.innerHTML=systemBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ — ພິມຊື່ໄດ້ທັນທີ</div>';
+}
+function openBranchAllCombo(){
+  const list=document.getElementById('combo-branch');
+  if(!list) return;
+  
+  // Show all branches from system_branches
+  const allBranches=S.db.systemBranches||[];
+  list.innerHTML=allBranches.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
+  openCombo('branch');
+}
+function filterBranchAll(){
+  const input=v('s-branch').toLowerCase();
+  const list=document.getElementById('combo-branch');
+  if(!list) return;
+  
+  // Filter all branches by name
+  const allBranches=S.db.systemBranches||[];
+  const filtered=allBranches.filter(b=>b.name.toLowerCase().includes(input));
+  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
+  openCombo('branch');
+}
+function pickBranchWithLocation(branchName,province,district){
+  sv('s-branch',branchName);
+  sv('s-prov',province);
+  sv('s-dist',district);
+  closeCombo('branch');
 }
 function filterCombo(type){
   const input=type==='prod'?v('s-prod'):type==='branch'?v('s-branch'):type==='prov'?v('s-prov'):type==='dist'?v('s-dist'):v('s-ship');
