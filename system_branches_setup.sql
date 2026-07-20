@@ -12,6 +12,14 @@ CREATE TABLE IF NOT EXISTS shipping_companies (
 -- Enable Row Level Security
 ALTER TABLE shipping_companies ENABLE ROW LEVEL SECURITY;
 
+-- Drop all policies that depend on company_id
+DROP POLICY IF EXISTS "member_access" ON shipping_companies;
+DROP POLICY IF EXISTS "member_insert" ON shipping_companies;
+DROP POLICY IF EXISTS "member_delete" ON shipping_companies;
+DROP POLICY IF EXISTS "sc_select" ON shipping_companies;
+DROP POLICY IF EXISTS "sc_update" ON shipping_companies;
+DROP POLICY IF EXISTS "sc_delete" ON shipping_companies;
+
 -- Migration: Drop company_id column if exists (no longer needed)
 DO $$
 BEGIN
