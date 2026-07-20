@@ -1255,7 +1255,7 @@ async function loadData(){
   ]);
   S.db.sales=sa.data||[]; S.db.finance=fi.data||[]; S.db.products=pr.data||[];
   S.db.ads=ad.data||[]; S.db.members=mb.data||[]; S.db.shipCos=sc.data||[];
-  S.db.branches=br.data||[];
+  S.db.branches=br.data||[]; S.db.systemBranches=br.data||[];
 }
 async function refreshData(){await loadData(); renderPage(S.page);}
 
