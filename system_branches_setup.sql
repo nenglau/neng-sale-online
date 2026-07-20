@@ -31,7 +31,6 @@ CREATE POLICY "Public insert access" ON shipping_companies
 -- Create table
 CREATE TABLE IF NOT EXISTS system_branches (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  company_id UUID,
   province TEXT NOT NULL,
   district TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -54,15 +53,15 @@ BEGIN
   END IF;
 END $$;
 
--- Migration: Add company_id column if not exists
+-- Migration: Drop company_id column if exists (no longer needed)
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
     SELECT 1 FROM information_schema.columns 
     WHERE table_name = 'system_branches' 
     AND column_name = 'company_id'
   ) THEN
-    ALTER TABLE system_branches ADD COLUMN company_id UUID;
+    ALTER TABLE system_branches DROP COLUMN company_id;
   END IF;
 END $$;
 
