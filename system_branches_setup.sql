@@ -2,8 +2,11 @@
 --  SHIPPING_COMPANIES TABLE SETUP
 -- ══════════════════════════════════════
 
+-- Drop table and recreate to ensure clean state
+DROP TABLE IF EXISTS shipping_companies CASCADE;
+
 -- Create table
-CREATE TABLE IF NOT EXISTS shipping_companies (
+CREATE TABLE shipping_companies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -12,13 +15,18 @@ CREATE TABLE IF NOT EXISTS shipping_companies (
 -- Enable Row Level Security
 ALTER TABLE shipping_companies ENABLE ROW LEVEL SECURITY;
 
--- Drop all policies that depend on company_id
-DROP POLICY IF EXISTS "member_access" ON shipping_companies;
-DROP POLICY IF EXISTS "member_insert" ON shipping_companies;
-DROP POLICY IF EXISTS "member_delete" ON shipping_companies;
-DROP POLICY IF EXISTS "sc_select" ON shipping_companies;
-DROP POLICY IF EXISTS "sc_update" ON shipping_companies;
-DROP POLICY IF EXISTS "sc_delete" ON shipping_companies;
+-- RLS Policies: Allow public read, insert, update, and delete
+CREATE POLICY "Public read access" ON shipping_companies
+  FOR SELECT USING (true);
+
+CREATE POLICY "Public insert access" ON shipping_companies
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public update access" ON shipping_companies
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Public delete access" ON shipping_companies
+  FOR DELETE USING (true);
 
 -- Migration: Drop company_id column if exists (no longer needed)
 DO $$
@@ -47,8 +55,14 @@ CREATE POLICY "Public insert access" ON shipping_companies
 --  SYSTEM_BRANCHES TABLE SETUP
 -- ══════════════════════════════════════
 
+-- Drop old branches table first to avoid foreign key issues
+DROP TABLE IF EXISTS branches CASCADE;
+
+-- Drop system_branches table and recreate to ensure clean state
+DROP TABLE IF EXISTS system_branches CASCADE;
+
 -- Create table
-CREATE TABLE IF NOT EXISTS system_branches (
+CREATE TABLE system_branches (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   province TEXT NOT NULL,
   district TEXT NOT NULL,
@@ -56,57 +70,6 @@ CREATE TABLE IF NOT EXISTS system_branches (
   shipping_company_id UUID REFERENCES shipping_companies(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
-
--- Migration: Drop old id column (BIGINT) and recreate as UUID if needed
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'system_branches' 
-    AND column_name = 'id' 
-    AND data_type = 'bigint'
-  ) THEN
-    ALTER TABLE system_branches DROP COLUMN id;
-    ALTER TABLE system_branches ADD COLUMN id UUID DEFAULT gen_random_uuid() PRIMARY KEY;
-  END IF;
-END $$;
-
--- Migration: Drop company_id column if exists (no longer needed)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'system_branches' 
-    AND column_name = 'company_id'
-  ) THEN
-    ALTER TABLE system_branches DROP COLUMN company_id;
-  END IF;
-END $$;
-
--- Migration: Drop old shipping_company column if exists
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'system_branches' 
-    AND column_name = 'shipping_company'
-  ) THEN
-    ALTER TABLE system_branches DROP COLUMN shipping_company;
-  END IF;
-END $$;
-
--- Migration: Add shipping_company_id column if not exists
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'system_branches' 
-    AND column_name = 'shipping_company_id'
-  ) THEN
-    ALTER TABLE system_branches ADD COLUMN shipping_company_id UUID REFERENCES shipping_companies(id);
-  END IF;
-END $$;
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_system_branches_prov_dist ON system_branches(province, district);
@@ -125,12 +88,18 @@ DROP POLICY IF EXISTS "sc_select" ON system_branches;
 DROP POLICY IF EXISTS "sc_update" ON system_branches;
 DROP POLICY IF EXISTS "sc_delete" ON system_branches;
 
--- RLS Policies: Allow public read and insert
+-- RLS Policies: Allow public read, insert, update, and delete
 CREATE POLICY "Public read access" ON system_branches
   FOR SELECT USING (true);
 
 CREATE POLICY "Public insert access" ON system_branches
   FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public update access" ON system_branches
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Public delete access" ON system_branches
+  FOR DELETE USING (true);
 
 -- ══════════════════════════════════════
 --  DROP OLD BRANCHES TABLE
