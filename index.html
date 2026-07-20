@@ -1244,19 +1244,18 @@ document.getElementById('confirm-dialog').onclick=(e)=>{
 // ══════════════════════════════════════
 async function loadData(){
   const cid=S.company.id;
-  const[sa,fi,pr,ad,mb,sc,br,sbr]=await Promise.all([
+  const[sa,fi,pr,ad,mb,sc,br]=await Promise.all([
     sb.from('sales').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('finance').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('products').select('*').eq('company_id',cid).order('name'),
     sb.from('ads').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('company_members').select('*, profiles(name,email)').eq('company_id',cid),
     sb.from('shipping_companies').select('*').eq('company_id',cid).order('name'),
-    sb.from('branches').select('*').eq('company_id',cid).order('name'),
-    sb.from('system_branches').select('*').order('name')
+    sb.from('system_branches').select('*').eq('company_id',cid).order('name')
   ]);
   S.db.sales=sa.data||[]; S.db.finance=fi.data||[]; S.db.products=pr.data||[];
   S.db.ads=ad.data||[]; S.db.members=mb.data||[]; S.db.shipCos=sc.data||[];
-  S.db.branches=br.data||[]; S.db.systemBranches=sbr.data||[];
+  S.db.branches=br.data||[];
 }
 async function refreshData(){await loadData(); renderPage(S.page);}
 
@@ -2415,11 +2414,11 @@ async function saveBranch(){
   const payload={company_id:S.company.id,shipping_company_id:shipCoObj.id,name:displayName,province,district:district||null};
   let error;
   if(bid){
-    const r=await sb.from('branches').update(payload).eq('id',bid);
+    const r=await sb.from('system_branches').update(payload).eq('id',bid);
     error=r.error;
     if(!error) S.db.branches=S.db.branches.map(b=>b.id===bid?{...b,...payload}:b);
   } else {
-    const r=await sb.from('branches').insert(payload).select().single();
+    const r=await sb.from('system_branches').insert(payload).select().single();
     error=r.error;
     if(!error && r.data){S.db.branches.push(r.data); S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));}
   }
@@ -2475,7 +2474,7 @@ async function delBranch(id){
     type:'danger'
   });
   if(!confirmed) return;
-  const{error}=await sb.from('branches').delete().eq('id',id);
+  const{error}=await sb.from('system_branches').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.filter(b=>b.id!==id);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
@@ -2486,7 +2485,7 @@ async function renameProvince(shipCoId,oldName){
   const name=newName.trim();
   const ids=S.db.branches.filter(b=>b.shipping_company_id===shipCoId&&b.province===oldName).map(b=>b.id);
   if(!ids.length) return;
-  const{error}=await sb.from('branches').update({province:name}).in('id',ids);
+  const{error}=await sb.from('system_branches').update({province:name}).in('id',ids);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,province:name}:b);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
@@ -2498,7 +2497,7 @@ async function renameDistrict(shipCoId,province,oldName){
   const name=newName.trim();
   const ids=S.db.branches.filter(b=>b.shipping_company_id===shipCoId&&b.province===province&&b.district===oldName).map(b=>b.id);
   if(!ids.length) return;
-  const{error}=await sb.from('branches').update({district:name}).in('id',ids);
+  const{error}=await sb.from('system_branches').update({district:name}).in('id',ids);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,district:name}:b);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
