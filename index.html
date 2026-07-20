@@ -1251,7 +1251,7 @@ async function loadData(){
     sb.from('ads').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('company_members').select('*, profiles(name,email)').eq('company_id',cid),
     sb.from('shipping_companies').select('*').eq('company_id',cid).order('name'),
-    sb.from('system_branches').select('*').eq('company_id',cid).order('name')
+    sb.from('system_branches').select('*').or('company_id.is.null,company_id.eq.'+cid).order('name')
   ]);
   S.db.sales=sa.data||[]; S.db.finance=fi.data||[]; S.db.products=pr.data||[];
   S.db.ads=ad.data||[]; S.db.members=mb.data||[]; S.db.shipCos=sc.data||[];
