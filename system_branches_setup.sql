@@ -115,9 +115,15 @@ CREATE INDEX IF NOT EXISTS idx_system_branches_name ON system_branches(name);
 -- Enable Row Level Security
 ALTER TABLE system_branches ENABLE ROW LEVEL SECURITY;
 
--- Drop policies if they exist
+-- Drop all existing policies that might block access
 DROP POLICY IF EXISTS "Public read access" ON system_branches;
 DROP POLICY IF EXISTS "Public insert access" ON system_branches;
+DROP POLICY IF EXISTS "member_access" ON system_branches;
+DROP POLICY IF EXISTS "member_insert" ON system_branches;
+DROP POLICY IF EXISTS "member_delete" ON system_branches;
+DROP POLICY IF EXISTS "sc_select" ON system_branches;
+DROP POLICY IF EXISTS "sc_update" ON system_branches;
+DROP POLICY IF EXISTS "sc_delete" ON system_branches;
 
 -- RLS Policies: Allow public read and insert
 CREATE POLICY "Public read access" ON system_branches
