@@ -28,29 +28,6 @@ CREATE POLICY "Public update access" ON shipping_companies
 CREATE POLICY "Public delete access" ON shipping_companies
   FOR DELETE USING (true);
 
--- Migration: Drop company_id column if exists (no longer needed)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns 
-    WHERE table_name = 'shipping_companies' 
-    AND column_name = 'company_id'
-  ) THEN
-    ALTER TABLE shipping_companies DROP COLUMN company_id;
-  END IF;
-END $$;
-
--- Drop policies if they exist
-DROP POLICY IF EXISTS "Public read access" ON shipping_companies;
-DROP POLICY IF EXISTS "Public insert access" ON shipping_companies;
-
--- RLS Policies: Allow public read and insert
-CREATE POLICY "Public read access" ON shipping_companies
-  FOR SELECT USING (true);
-
-CREATE POLICY "Public insert access" ON shipping_companies
-  FOR INSERT WITH CHECK (true);
-
 -- ══════════════════════════════════════
 --  SYSTEM_BRANCHES TABLE SETUP
 -- ══════════════════════════════════════
@@ -78,16 +55,6 @@ CREATE INDEX IF NOT EXISTS idx_system_branches_name ON system_branches(name);
 -- Enable Row Level Security
 ALTER TABLE system_branches ENABLE ROW LEVEL SECURITY;
 
--- Drop all existing policies that might block access
-DROP POLICY IF EXISTS "Public read access" ON system_branches;
-DROP POLICY IF EXISTS "Public insert access" ON system_branches;
-DROP POLICY IF EXISTS "member_access" ON system_branches;
-DROP POLICY IF EXISTS "member_insert" ON system_branches;
-DROP POLICY IF EXISTS "member_delete" ON system_branches;
-DROP POLICY IF EXISTS "sc_select" ON system_branches;
-DROP POLICY IF EXISTS "sc_update" ON system_branches;
-DROP POLICY IF EXISTS "sc_delete" ON system_branches;
-
 -- RLS Policies: Allow public read, insert, update, and delete
 CREATE POLICY "Public read access" ON system_branches
   FOR SELECT USING (true);
@@ -100,13 +67,6 @@ CREATE POLICY "Public update access" ON system_branches
 
 CREATE POLICY "Public delete access" ON system_branches
   FOR DELETE USING (true);
-
--- ══════════════════════════════════════
---  DROP OLD BRANCHES TABLE
--- ══════════════════════════════════════
-
--- Drop old branches table if it exists
-DROP TABLE IF EXISTS branches CASCADE;
 
 -- ══════════════════════════════════════
 --  CLEAR EXISTING DATA
@@ -236,11 +196,4 @@ INSERT INTO system_branches (province, district, name, shipping_company_id) VALU
 -- ເຊກອງ
 ('ແຂວງເຊກອງ', 'ກະລຶມ', 'ກະລຶມ', (SELECT id FROM shipping_companies WHERE name = 'ອານຸສິດ'))
 ON CONFLICT DO NOTHING;
-
--- ══════════════════════════════════════
---  DROP OLD BRANCHES TABLE
--- ══════════════════════════════════════
-
--- Drop old branches table if it exists
-DROP TABLE IF EXISTS branches CASCADE;
 
