@@ -1250,7 +1250,7 @@ async function loadData(){
     sb.from('products').select('*').eq('company_id',cid).order('name'),
     sb.from('ads').select('*').eq('company_id',cid).order('date',{ascending:false}),
     sb.from('company_members').select('*, profiles(name,email)').eq('company_id',cid),
-    sb.from('shipping_companies').select('*').eq('company_id',cid).order('name'),
+    sb.from('shipping_companies').select('*').order('name'),
     sb.from('system_branches').select('*').order('name')
   ]);
   S.db.sales=sa.data||[]; S.db.finance=fi.data||[]; S.db.products=pr.data||[];
@@ -1795,7 +1795,7 @@ async function saveSale(){
   const ship=v('s-ship').trim();
   let shipCoObj=S.db.shipCos.find(x=>x.name===ship);
   if(ship && !shipCoObj){
-    const{data:ns}=await sb.from('shipping_companies').insert({company_id:S.company.id,name:ship}).select().single();
+    const{data:ns}=await sb.from('shipping_companies').insert({name:ship}).select().single();
     if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
   }
   const branch=v('s-branch').trim();
@@ -2406,7 +2406,7 @@ async function saveBranch(){
   const displayName=name||(district?`${province} - ${district}`:province);
   let shipCoObj=S.db.shipCos.find(x=>x.name===shipName);
   if(!shipCoObj){
-    const{data:ns}=await sb.from('shipping_companies').insert({company_id:S.company.id,name:shipName}).select().single();
+    const{data:ns}=await sb.from('shipping_companies').insert({name:shipName}).select().single();
     if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
   }
   if(!shipCoObj){toast('ບໍ່ສາມາດບັນທຶກບໍລິສັດຂົນສົ່ງ','error');return;}
@@ -2505,7 +2505,7 @@ async function renameDistrict(shipCoId,province,oldName){
 }
 async function addShipCo(){
   const name=prompt('ຊື່ບໍລິສັດຂົນສົ່ງ:'); if(!name?.trim()) return;
-  const{data,error}=await sb.from('shipping_companies').insert({company_id:S.company.id,name:name.trim()}).select().single();
+  const{data,error}=await sb.from('shipping_companies').insert({name:name.trim()}).select().single();
   if(error){toast(error.message,'error');return;}
   S.db.shipCos.push(data); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name));
   const sml=document.getElementById('shipping-main-list');

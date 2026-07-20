@@ -5,13 +5,24 @@
 -- Create table
 CREATE TABLE IF NOT EXISTS shipping_companies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  company_id UUID,
   name TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable Row Level Security
 ALTER TABLE shipping_companies ENABLE ROW LEVEL SECURITY;
+
+-- Migration: Drop company_id column if exists (no longer needed)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'shipping_companies' 
+    AND column_name = 'company_id'
+  ) THEN
+    ALTER TABLE shipping_companies DROP COLUMN company_id;
+  END IF;
+END $$;
 
 -- Drop policies if they exist
 DROP POLICY IF EXISTS "Public read access" ON shipping_companies;
