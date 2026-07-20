@@ -1310,8 +1310,8 @@ function setupRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'sales',filter:`company_id=eq.${cid}`},()=>refreshData())
     .on('postgres_changes',{event:'*',schema:'public',table:'finance',filter:`company_id=eq.${cid}`},()=>refreshData())
     .on('postgres_changes',{event:'*',schema:'public',table:'products',filter:`company_id=eq.${cid}`},()=>refreshData())
-    .on('postgres_changes',{event:'*',schema:'public',table:'shipping_companies',filter:`company_id=eq.${cid}`},()=>refreshData())
-    .on('postgres_changes',{event:'*',schema:'public',table:'branches',filter:`company_id=eq.${cid}`},()=>refreshData())
+    .on('postgres_changes',{event:'*',schema:'public',table:'shipping_companies'},()=>refreshData())
+    .on('postgres_changes',{event:'*',schema:'public',table:'system_branches'},()=>refreshData())
     .subscribe();
 }
 
@@ -1801,11 +1801,6 @@ async function saveSale(){
   const branch=v('s-branch').trim();
   const prov=v('s-prov').trim();
   const dist=v('s-dist').trim();
-  // Add branch to system_branches if not exists (shared across all users)
-  if(branch && prov && dist && ship && !S.db.systemBranches.find(b=>b.province===prov && b.district===dist && b.name===branch && b.shipping_company===ship)){
-    const{data:nb}=await sb.from('system_branches').insert({province:prov,district:dist,name:branch,shipping_company:ship}).select().single();
-    if(nb){S.db.systemBranches.push(nb); S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));}
-  }
   const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
     customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,
     product_name:prod,qty,price,cost,discount:+v('s-disc')||0,
