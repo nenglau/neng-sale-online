@@ -2794,13 +2794,13 @@ function pickProd(name,price,cost){sv('s-prod',name);sv('s-price',price);sv('s-c
 //  GEO
 // ══════════════════════════════════════
 function getAllProvinces(){
-  const custom=[...new Set(S.db.branches.map(b=>b.province).filter(Boolean))];
+  const custom=[...new Set(S.db.systemBranches.map(b=>b.province).filter(Boolean))];
   const customClean=custom.map(p=>p.startsWith('ແຂວງ')?p.substring(4):p);
   return [...new Set([...Object.keys(LAO_GEO),...customClean])].sort();
 }
 function getAllDistricts(prov){
   const std=LAO_GEO[prov]||[];
-  const custom=[...new Set(S.db.branches.filter(b=>b.province===prov&&b.district).map(b=>b.district))];
+  const custom=[...new Set(S.db.systemBranches.filter(b=>b.province===prov&&b.district).map(b=>b.district))];
   return [...new Set([...std,...custom])].sort();
 }
 function populateProvinces(sel=''){
