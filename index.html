@@ -2394,30 +2394,41 @@ function openEditBranch(id,name,province,district,shipCoId){
   openModal('modal-branch');
 }
 async function saveBranch(){
+  console.log('saveBranch called');
   const shipName=v('br-ship').trim();
   const province=v('br-prov'), district=v('br-dist'), name=v('br-name').trim();
-  if(!shipName){toast('ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງ','error');return;}
-  if(!province){toast('ກະລຸນາເລືອກແຂວງ','error');return;}
+  console.log('saveBranch - shipName:', shipName, 'province:', province, 'district:', district, 'name:', name);
+  if(!shipName){toast('ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງ','error');console.log('Error: No shipName');return;}
+  if(!province){toast('ກະລຸນາເລືອກແຂວງ','error');console.log('Error: No province');return;}
   const displayName=name||(district?`${province} - ${district}`:province);
+  console.log('displayName:', displayName);
   let shipCoObj=S.db.shipCos.find(x=>x.name===shipName);
+  console.log('shipCoObj found:', !!shipCoObj);
   if(!shipCoObj){
+    console.log('Creating new shipping company:', shipName);
     const{data:ns}=await sb.from('shipping_companies').insert({name:shipName}).select().single();
+    console.log('New shipping company result:', ns);
     if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
   }
-  if(!shipCoObj){toast('ບໍ່ສາມາດບັນທຶກບໍລິສັດຂົນສົ່ງ','error');return;}
+  if(!shipCoObj){toast('ບໍ່ສາມາດບັນທຶກບໍລິສັດຂົນສົ່ງ','error');console.log('Error: No shipCoObj after insert');return;}
   const bid=v('branch-id');
   const payload={shipping_company_id:shipCoObj.id,name:displayName,province,district:district||null};
+  console.log('payload:', payload);
   let error;
   if(bid){
+    console.log('Updating existing branch, bid:', bid);
     const r=await sb.from('system_branches').update(payload).eq('id',bid);
     error=r.error;
+    console.log('Update result:', r);
     if(!error){
       S.db.branches=S.db.branches.map(b=>b.id===bid?{...b,...payload}:b);
       S.db.systemBranches=S.db.systemBranches.map(b=>b.id===bid?{...b,...payload}:b);
     }
   } else {
+    console.log('Inserting new branch');
     const r=await sb.from('system_branches').insert(payload).select().single();
     error=r.error;
+    console.log('Insert result:', r);
     if(!error && r.data){
       S.db.branches.push(r.data);
       S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));
@@ -2425,7 +2436,8 @@ async function saveBranch(){
       S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));
     }
   }
-  if(error){toast(error.message,'error');return;}
+  if(error){toast(error.message,'error');console.log('Error during save:', error);return;}
+  console.log('Save successful, closing modal');
   closeModal('modal-branch');
   const sml=document.getElementById('shipping-main-list');
   if(sml) sml.innerHTML=renderShippingWithBranches();
