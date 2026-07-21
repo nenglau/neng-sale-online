@@ -2411,11 +2411,19 @@ async function saveBranch(){
   if(bid){
     const r=await sb.from('system_branches').update(payload).eq('id',bid);
     error=r.error;
-    if(!error) S.db.branches=S.db.branches.map(b=>b.id===bid?{...b,...payload}:b);
+    if(!error){
+      S.db.branches=S.db.branches.map(b=>b.id===bid?{...b,...payload}:b);
+      S.db.systemBranches=S.db.systemBranches.map(b=>b.id===bid?{...b,...payload}:b);
+    }
   } else {
     const r=await sb.from('system_branches').insert(payload).select().single();
     error=r.error;
-    if(!error && r.data){S.db.branches.push(r.data); S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));}
+    if(!error && r.data){
+      S.db.branches.push(r.data);
+      S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));
+      S.db.systemBranches.push(r.data);
+      S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));
+    }
   }
   if(error){toast(error.message,'error');return;}
   closeModal('modal-branch');
@@ -2472,6 +2480,7 @@ async function delBranch(id){
   const{error}=await sb.from('system_branches').delete().eq('id',id);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.filter(b=>b.id!==id);
+  S.db.systemBranches=S.db.systemBranches.filter(b=>b.id!==id);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
 }
 async function renameProvince(shipCoId,oldName){
@@ -2483,6 +2492,7 @@ async function renameProvince(shipCoId,oldName){
   const{error}=await sb.from('system_branches').update({province:name}).in('id',ids);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,province:name}:b);
+  S.db.systemBranches=S.db.systemBranches.map(b=>ids.includes(b.id)?{...b,province:name}:b);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
   toast('ແກ້ໄຂຊື່ແຂວງສຳເລັດ ✓','success');
 }
@@ -2495,6 +2505,7 @@ async function renameDistrict(shipCoId,province,oldName){
   const{error}=await sb.from('system_branches').update({district:name}).in('id',ids);
   if(error){toast(error.message,'error');return;}
   S.db.branches=S.db.branches.map(b=>ids.includes(b.id)?{...b,district:name}:b);
+  S.db.systemBranches=S.db.systemBranches.map(b=>ids.includes(b.id)?{...b,district:name}:b);
   document.getElementById('shipping-main-list').innerHTML=renderShippingWithBranches();
   toast('ແກ້ໄຂຊື່ເມືອງສຳເລັດ ✓','success');
 }
@@ -2654,6 +2665,8 @@ function pickShip(name){
   sv('s-ship',name); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
   sv('br-ship',name); sv('br-prov',''); sv('br-dist','');
   buildProvCombo(); buildDistCombo(); buildBranchCombo(); closeCombo('ship');
+  // Rebuild branch combo to filter by selected shipping company
+  setTimeout(()=>buildBranchCombo(),50);
 }
 function buildProvCombo(){
   const list=document.getElementById('combo-prov');
@@ -2662,6 +2675,8 @@ function buildProvCombo(){
 function pickProv(name){
   sv('s-prov',name); sv('s-dist',''); sv('s-branch','');
   buildDistCombo(); buildBranchCombo(); closeCombo('prov');
+  // Rebuild branch combo to filter by selected province
+  setTimeout(()=>buildBranchCombo(),50);
 }
 function buildDistCombo(){
   const prov=v('s-prov').trim();
@@ -2671,6 +2686,8 @@ function buildDistCombo(){
 function pickDist(name){
   sv('s-dist',name); sv('s-branch','');
   buildBranchCombo(); closeCombo('dist');
+  // Rebuild branch combo to filter by selected district
+  setTimeout(()=>buildBranchCombo(),50);
 }
 function buildBranchCombo(){
   const provName=v('s-prov').trim();
@@ -2706,10 +2723,14 @@ function openBranchAllCombo(){
     return;
   }
   
-  // Show branches filtered by shipping company
+  // Show branches filtered by shipping company, province, and district
   const shipCo=S.db.shipCos.find(x=>x.name===shipName);
+  const provName=v('s-prov').trim();
+  const distName=v('s-dist').trim();
   const allBranches=S.db.systemBranches||[];
-  const filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
+  let filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
+  if(provName) filtered=filtered.filter(b=>b.province===provName);
+  if(distName) filtered=filtered.filter(b=>b.district===distName);
   list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
   openCombo('branch');
 }
@@ -2726,10 +2747,16 @@ function filterBranchAll(){
     return;
   }
   
-  // Filter branches by name and shipping company
+  // Filter branches by name, shipping company, province, and district
+  const shipCo=S.db.shipCos.find(x=>x.name===shipName);
+  const provName=v('s-prov').trim();
+  const distName=v('s-dist').trim();
   const allBranches=S.db.systemBranches||[];
-  const filtered=allBranches.filter(b=>b.shipping_company===shipName && b.name.toLowerCase().includes(input));
-  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(b.shipping_company)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
+  let filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
+  if(provName) filtered=filtered.filter(b=>b.province===provName);
+  if(distName) filtered=filtered.filter(b=>b.district===distName);
+  filtered=filtered.filter(b=>b.name.toLowerCase().includes(input));
+  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
 }
 function pickBranchWithLocation(branchName,province,district,shippingCompany){
