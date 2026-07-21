@@ -2432,6 +2432,9 @@ async function saveBranch(){
   toast(bid?'ແກ້ໄຂສຳເລັດ':'ເພີ່ມສາຂາສຳເລັດ','success');
   // Reload data from database to ensure persistence
   await loadData();
+  // Rebuild province and district combos to include new branch locations
+  buildProvCombo();
+  buildDistCombo();
   // Rebuild branch combo in sales form if open
   setTimeout(()=>buildBranchCombo(),100);
 }
