@@ -2432,6 +2432,7 @@ async function saveBranch(){
   toast(bid?'ແກ້ໄຂສຳເລັດ':'ເພີ່ມສາຂາສຳເລັດ','success');
   // Reload data from database to ensure persistence
   await loadData();
+  console.log('After loadData, systemBranches count:', S.db.systemBranches.length);
   // Rebuild province and district combos to include new branch locations
   buildProvCombo();
   buildDistCombo();
@@ -2702,7 +2703,10 @@ function buildBranchCombo(){
   const shipName=v('s-ship').trim();
   const list=document.getElementById('combo-branch');
   if(!list) return;
-  
+
+  console.log('buildBranchCombo called - shipName:', shipName, 'provName:', provName, 'distName:', distName);
+  console.log('systemBranches count:', (S.db.systemBranches||[]).length);
+
   // Get branches from system_branches (shared across all users)
   let systemBranches=S.db.systemBranches||[];
   if(provName) systemBranches=systemBranches.filter(b=>b.province===provName);
@@ -2711,7 +2715,9 @@ function buildBranchCombo(){
     const shipCo=S.db.shipCos.find(x=>x.name===shipName);
     if(shipCo) systemBranches=systemBranches.filter(b=>b.shipping_company_id===shipCo.id);
   }
-  
+
+  console.log('Filtered branches count:', systemBranches.length);
+
   list.innerHTML=systemBranches.map(b=>{
     const shipCo=S.db.shipCos.find(x=>x.id===b.shipping_company_id);
     const shipName=shipCo?shipCo.name:'';
@@ -2745,7 +2751,9 @@ function filterBranchAll(){
   const input=v('s-branch').toLowerCase();
   const list=document.getElementById('combo-branch');
   if(!list) return;
-  
+
+  console.log('filterBranchAll called - input:', input, 'systemBranches count:', (S.db.systemBranches||[]).length);
+
   // Require shipping company to be selected
   const shipName=v('s-ship').trim();
   if(!shipName){
@@ -2753,7 +2761,7 @@ function filterBranchAll(){
     openCombo('branch');
     return;
   }
-  
+
   // Filter branches by name, shipping company, province, and district
   const shipCo=S.db.shipCos.find(x=>x.name===shipName);
   const provName=v('s-prov').trim();
@@ -2763,6 +2771,9 @@ function filterBranchAll(){
   if(provName) filtered=filtered.filter(b=>b.province===provName);
   if(distName) filtered=filtered.filter(b=>b.district===distName);
   filtered=filtered.filter(b=>b.name.toLowerCase().includes(input));
+
+  console.log('filterBranchAll - filtered count:', filtered.length);
+
   list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
 }
