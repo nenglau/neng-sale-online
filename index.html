@@ -751,7 +751,7 @@ textarea.fc{resize:vertical;min-height:72px}
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-sale')">ຍົກເລີກ</button>
-      <button class="btn btn-green" onclick="saveSale()">💾 ບັນທຶກ</button>
+      <button class="btn btn-green" id="btn-save-sale" onclick="saveSale()">💾 ບັນທຶກ</button>
     </div>
   </div>
 </div>
@@ -1789,28 +1789,61 @@ function editSale(id){
   sv('s-disc',s.discount||0); sv('s-status',s.status); sv('s-note',s.note||'');
   buildShipCombo(); buildProvCombo(); buildDistCombo(); buildBranchCombo(); buildProdCombo(); calcTotal(); openModal('modal-sale');
 }
+let _savingSale=false;
 async function saveSale(){
-  const date=v('s-date'),prod=v('s-prod'),qty=+v('s-qty')||1,price=+v('s-price')||0,cost=+v('s-cost')||0;
-  if(!date||!prod){toast('ກະລຸນາປ້ອນ ວັນທີ ແລະ ສິນຄ້າ','error');return;}
-  const ship=v('s-ship').trim();
-  let shipCoObj=S.db.shipCos.find(x=>x.name===ship);
-  if(ship && !shipCoObj){
-    const{data:ns}=await sb.from('shipping_companies').insert({name:ship}).select().single();
-    if(ns){S.db.shipCos.push(ns); S.db.shipCos.sort((a,b)=>a.name.localeCompare(b.name)); shipCoObj=ns;}
+  if(_savingSale) return; // ignore double-click/double-tap while a save is already running
+  _savingSale=true;
+  const btn=document.getElementById('btn-save-sale');
+  if(btn) btn.disabled=true;
+  try{
+    const date=v('s-date'),prod=v('s-prod'),qty=+v('s-qty')||1,price=+v('s-price')||0,cost=+v('s-cost')||0;
+    if(!date||!prod){toast('ກະລຸນາປ້ອນ ວັນທີ ແລະ ສິນຄ້າ','error');return;}
+    const ship=v('s-ship').trim();
+    // Shipping company must already exist (fixed reference data) — no auto-create here.
+    const shipCoObj=S.db.shipCos.find(x=>x.name.trim()===ship);
+    const branch=v('s-branch').trim();
+    const prov=v('s-prov').trim();
+    const dist=v('s-dist').trim();
+
+    // Branch is the one thing that can be new: if it doesn't already exist under the
+    // selected shipping company + province + district, create it in system_branches now.
+    if(branch && prov && shipCoObj){
+      const distNorm=dist||'';
+      const exists=(S.db.systemBranches||[]).some(b=>
+        (b.name||'').trim()===branch &&
+        (b.province||'').trim()===prov &&
+        (b.district||'').trim()===distNorm &&
+        b.shipping_company_id===shipCoObj.id
+      );
+      if(!exists){
+        const bpayload={shipping_company_id:shipCoObj.id,name:branch,province:prov,district:distNorm};
+        const{data:nb,error:berr}=await sb.from('system_branches').insert(bpayload).select().single();
+        if(berr){
+          toast('ບໍ່ສາມາດບັນທຶກສາຂາໃໝ່: '+berr.message,'error');
+        } else if(nb){
+          S.db.branches.push(nb); S.db.branches.sort((a,b)=>a.name.localeCompare(b.name));
+          S.db.systemBranches.push(nb); S.db.systemBranches.sort((a,b)=>a.name.localeCompare(b.name));
+        }
+      }
+    }
+
+    const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
+      customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,
+      product_name:prod,qty,price,cost,discount:+v('s-disc')||0,
+      shipping_company:ship||null,province:prov||null,district:dist||null,branch:branch||null,
+      status:v('s-status'),note:v('s-note')||null};
+    const eid=v('sale-id'); let err;
+    if(eid){const{error}=await sb.from('sales').update(pl).eq('id',eid);err=error;if(!err)S.db.sales=S.db.sales.map(x=>x.id===eid?{...x,...pl}:x);}
+    else{const{data,error}=await sb.from('sales').insert(pl).select().single();err=error;if(!err)S.db.sales.unshift(data);}
+    if(err){toast(err.message,'error');return;}
+    closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesPage();
+  }catch(e){
+    console.error('saveSale error:',e);
+    toast('ເກີດຂໍ້ຜິດພາດ: '+(e?.message||e),'error');
+  }finally{
+    _savingSale=false;
+    if(btn) btn.disabled=false;
   }
-  const branch=v('s-branch').trim();
-  const prov=v('s-prov').trim();
-  const dist=v('s-dist').trim();
-  const pl={company_id:S.company.id,user_id:S.user.id,date,channel:v('s-channel'),
-    customer_name:v('s-cname')||null,customer_phone:v('s-cphone')||null,
-    product_name:prod,qty,price,cost,discount:+v('s-disc')||0,
-    shipping_company:ship||null,province:v('s-prov')||null,district:v('s-dist')||null,branch:v('s-branch')||null,
-    status:v('s-status'),note:v('s-note')||null};
-  const eid=v('sale-id'); let err;
-  if(eid){const{error}=await sb.from('sales').update(pl).eq('id',eid);err=error;if(!err)S.db.sales=S.db.sales.map(x=>x.id===eid?{...x,...pl}:x);}
-  else{const{data,error}=await sb.from('sales').insert(pl).select().single();err=error;if(!err)S.db.sales.unshift(data);}
-  if(err){toast(err.message,'error');return;}
-  closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesPage();
 }
 async function delSale(id){
   const confirmed=await showConfirm({
@@ -2705,10 +2738,10 @@ function buildBranchCombo(){
 
   // Get branches from system_branches (shared across all users)
   let systemBranches=S.db.systemBranches||[];
-  if(provName) systemBranches=systemBranches.filter(b=>b.province===provName);
-  if(distName) systemBranches=systemBranches.filter(b=>b.district===distName);
+  if(provName) systemBranches=systemBranches.filter(b=>(b.province||'').trim()===provName);
+  if(distName) systemBranches=systemBranches.filter(b=>(b.district||'').trim()===distName);
   if(shipName){
-    const shipCo=S.db.shipCos.find(x=>x.name===shipName);
+    const shipCo=S.db.shipCos.find(x=>x.name.trim()===shipName);
     if(shipCo) systemBranches=systemBranches.filter(b=>b.shipping_company_id===shipCo.id);
   }
 
@@ -2731,13 +2764,13 @@ function openBranchAllCombo(){
   }
   
   // Show branches filtered by shipping company, province, and district
-  const shipCo=S.db.shipCos.find(x=>x.name===shipName);
+  const shipCo=S.db.shipCos.find(x=>x.name.trim()===shipName);
   const provName=v('s-prov').trim();
   const distName=v('s-dist').trim();
   const allBranches=S.db.systemBranches||[];
   let filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
-  if(provName) filtered=filtered.filter(b=>b.province===provName);
-  if(distName) filtered=filtered.filter(b=>b.district===distName);
+  if(provName) filtered=filtered.filter(b=>(b.province||'').trim()===provName);
+  if(distName) filtered=filtered.filter(b=>(b.district||'').trim()===distName);
   list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ຍັງບໍ່ມີ</div>';
   openCombo('branch');
 }
@@ -2755,14 +2788,14 @@ function filterBranchAll(){
   }
 
   // Filter branches by name, shipping company, province, and district
-  const shipCo=S.db.shipCos.find(x=>x.name===shipName);
+  const shipCo=S.db.shipCos.find(x=>x.name.trim()===shipName);
   const provName=v('s-prov').trim();
   const distName=v('s-dist').trim();
   const allBranches=S.db.systemBranches||[];
   let filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
-  if(provName) filtered=filtered.filter(b=>b.province===provName);
-  if(distName) filtered=filtered.filter(b=>b.district===distName);
-  filtered=filtered.filter(b=>b.name.toLowerCase().includes(input));
+  if(provName) filtered=filtered.filter(b=>(b.province||'').trim()===provName);
+  if(distName) filtered=filtered.filter(b=>(b.district||'').trim()===distName);
+  filtered=filtered.filter(b=>(b.name||'').toLowerCase().includes(input));
 
   list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
