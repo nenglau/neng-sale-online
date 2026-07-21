@@ -2378,12 +2378,13 @@ function openAddBranch(shipCoId='',province='',district=''){
   if(province) setTimeout(()=>updateBranchDistricts(district),30);
   openModal('modal-branch');
 }
-function openAddBranchFromSale(){
+function openAddBranchFromSale(branchName=''){
   const ship=v('s-ship').trim();
   const prov=v('s-prov').trim();
   const dist=v('s-dist').trim();
   const co=S.db.shipCos.find(x=>x.name===ship);
   openAddBranch(co?co.id:'',prov,dist);
+  sv('br-name',branchName);
 }
 function openEditBranch(id,name,province,district,shipCoId){
   sv('branch-id',id); sv('br-name',name||'');
@@ -2746,24 +2747,25 @@ function filterBranchAll(){
   const list=document.getElementById('combo-branch');
   if(!list) return;
   
-  // Require shipping company to be selected
-  const shipName=v('s-ship').trim();
-  if(!shipName){
-    list.innerHTML='<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ກະລຸນາເລືອກບໍລິສັດຂົນສົ່ງກ່ອນ</div>';
-    openCombo('branch');
-    return;
-  }
-  
   // Filter branches by name, shipping company, province, and district
+  const shipName=v('s-ship').trim();
   const shipCo=S.db.shipCos.find(x=>x.name===shipName);
   const provName=v('s-prov').trim();
   const distName=v('s-dist').trim();
   const allBranches=S.db.systemBranches||[];
-  let filtered=shipCo?allBranches.filter(b=>b.shipping_company_id===shipCo.id):[];
+  let filtered=allBranches;
+  if(shipCo) filtered=filtered.filter(b=>b.shipping_company_id===shipCo.id);
   if(provName) filtered=filtered.filter(b=>b.province===provName);
   if(distName) filtered=filtered.filter(b=>b.district===distName);
   filtered=filtered.filter(b=>b.name.toLowerCase().includes(input));
-  list.innerHTML=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('')||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
+  
+  // Add option to create new branch if no exact match
+  const exactMatch=filtered.find(b=>b.name.toLowerCase()===input);
+  let html=filtered.map(b=>`<div class="combo-item" onmousedown="pickBranchWithLocation('${esc(b.name)}','${esc(b.province)}','${esc(b.district)}','${esc(shipName)}')">${esc(b.name)} <small style="color:var(--gray-500)">(${esc(b.province)}, ${esc(b.district)})</small></div>`).join('');
+  if(input && !exactMatch && shipCo){
+    html+=`<div class="combo-item" style="color:var(--green);font-weight:500" onmousedown="openAddBranchFromSale('${esc(input)}')">+ ເພີ່ມ "${esc(input)}" ເປັນສາຂາໃໝ່</div>`;
+  }
+  list.innerHTML=html||'<div style="padding:8px 12px;color:var(--gray-500);font-size:12px">ບໍ່ພົບ</div>';
   openCombo('branch');
 }
 function pickBranchWithLocation(branchName,province,district,shippingCompany){
