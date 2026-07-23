@@ -379,47 +379,54 @@ textarea.fc{resize:vertical;min-height:72px}
   /* ── Sales page (ຈັດການຍອດ): compact header, single-row filters, card view ── */
   #page-sales .topbar{padding:0 12px 0 8px;height:auto;min-height:44px}
   #page-sales .topbar-title{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #sales-panel-manage .panel-header{padding:6px 12px;flex-direction:column;align-items:stretch;gap:6px}
+  #sales-panel-manage .panel{background:transparent;box-shadow:none;border-radius:0;margin:0 -24px}
+  #sales-panel-manage .panel-header{padding:5px 10px;flex-direction:column;align-items:stretch;gap:4px;border-bottom:none}
   #sales-panel-manage .panel-title{display:none}
-  #sales-panel-manage .filter-bar{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"search status" "periods periods";gap:6px;width:100%}
+  /* Periods row sits closest to the top header; search is full-width below it; status+channel share the last row */
+  #sales-panel-manage .filter-bar{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"periods periods" "search search" "status channel";gap:6px;width:100%}
   #sales-panel-manage .search-wrap{grid-area:search;width:100%}
-  #sales-panel-manage .search-input{width:100%;font-size:12px;padding:7px 10px 7px 30px}
+  #sales-panel-manage .search-input{width:100%;font-size:12px;padding:6px 10px 6px 30px}
   #sales-panel-manage #sales-sf{grid-area:status;width:100% !important;font-size:12px}
+  #sales-panel-manage #sales-cf{grid-area:channel;width:100% !important;font-size:12px}
   #sales-panel-manage .period-tabs{grid-area:periods}
   #sales-panel-manage .filter-bar>.btn.btn-green{display:none}
+
+  /* Pending-orders tab: same compact/transparent header treatment */
+  #sales-panel-pending .panel{background:transparent;box-shadow:none;border-radius:0;margin:0 -24px}
+  #sales-panel-pending .panel-header{padding:5px 10px 8px;border-bottom:none}
+  #sales-panel-pending .panel-title{display:none}
 
   /* Table becomes the card list on mobile */
   #sales-panel-manage .table-wrap{display:none}
   #pending-orders-list{display:none}
-  .sales-cards{display:flex;flex-direction:column;gap:10px;padding:12px}
+  .sales-cards{display:flex;flex-direction:column;gap:8px;padding:6px 6px}
   .sale-card{
-    display:grid;
-    grid-template-columns:auto 1.3fr 1fr 1fr;
-    gap:5px;
     background:var(--white);
     border:1px solid var(--gray-200);
     border-radius:var(--radius-lg);
     box-shadow:var(--shadow-sm);
-    padding:12px;
     cursor:pointer;
   }
-  .sc-col{display:flex;flex-direction:column;gap:6px;justify-content:center;min-width:0}
-  .sc-col1{align-items:center;justify-content:space-between}
-  .sc-idx{font-size:16px;font-weight:700;color:var(--gray-500)}
-  .sc-chk{width:18px;height:18px;cursor:pointer}
-  .sc-r{font-size:13px;color:var(--gray-800);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  /* Nice background pill on every field except index/checkbox/date */
-  .sc-r.sc-bg{display:inline-block;background:var(--gray-50);border-radius:8px;padding:4px 10px}
-  .sc-r.sc-bg.sc-bg-green{background:var(--green-hover);color:var(--green-dark);font-weight:700}
-  /* Column 2: date plain (exempt) and shrunk further; channel/shipping/product get backgrounds; all left-aligned */
-  .sc-col2{align-items:flex-start;text-align:left}
-  .sc-col2 .sc-r:first-child{font-size:11px}
-  /* Column 3: name/phone/COD amount, all get backgrounds, left-aligned, never truncated */
-  .sc-col3{align-items:flex-start;text-align:left}
-  .sc-col3 .sc-r{white-space:nowrap;overflow:visible;text-overflow:clip}
-  /* Column 4: province/district/branch, all get backgrounds, right-aligned, never truncated */
-  .sc-col4{align-items:flex-end;text-align:right}
-  .sc-col4 .sc-r{font-size:12px;white-space:nowrap;overflow:visible;text-overflow:clip}
+
+  /* ── Shared 3-row card layout: ຈັດການຍອດ and ອໍເດີຕ້ອງສົ່ງ tabs ── */
+  #sales-cards .sale-card,#pending-cards .sale-card{display:flex;flex-direction:column;gap:6px;padding:10px 12px}
+  #sales-cards .sc-row,#pending-cards .sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  /* Row 1: index/date/checkbox on the left, channel + shipping badges on the right */
+  #sales-cards .sc-row1,#pending-cards .sc-row1{padding-bottom:6px;border-bottom:1px solid var(--gray-100)}
+  #sales-cards .sc-row1l,#pending-cards .sc-row1l{display:flex;align-items:center;gap:8px;min-width:0}
+  #sales-cards .sc-idx,#pending-cards .sc-idx{font-size:13px;font-weight:700;color:var(--gray-500)}
+  #sales-cards .sc-date,#pending-cards .sc-date{font-size:12px;color:var(--gray-500);white-space:nowrap}
+  #sales-cards .sc-chk,#pending-cards .sc-chk{width:16px;height:16px;cursor:pointer;flex-shrink:0}
+  #sales-cards .sc-row1r,#pending-cards .sc-row1r{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+  #sales-cards .sc-ship-badge,#pending-cards .sc-ship-badge{display:inline-flex;align-items:center;border-radius:var(--radius);padding:4px 10px;font-size:11px;font-weight:600;background:var(--gray-50);color:var(--gray-700);white-space:nowrap}
+  /* Row 2: product name left, phone/customer right */
+  #sales-cards .sc-row2,#pending-cards .sc-row2{align-items:flex-start;gap:10px}
+  #sales-cards .sc-product,#pending-cards .sc-product{font-size:13px;font-weight:700;color:var(--gray-800);flex:1 1 auto;min-width:0;overflow-wrap:break-word;word-break:break-word}
+  #sales-cards .sc-cust,#pending-cards .sc-cust{font-size:12px;color:var(--gray-600);text-align:right;flex-shrink:0;white-space:nowrap}
+  /* Row 3: location breadcrumb (70%, wraps freely) + total amount (30%, never wraps) */
+  #sales-cards .sc-row3,#pending-cards .sc-row3{align-items:flex-start;gap:8px}
+  #sales-cards .sc-loc,#pending-cards .sc-loc{font-size:12px;color:var(--gray-700);line-height:1.4;flex:1 1 70%;min-width:0;white-space:normal;overflow-wrap:break-word;word-break:break-word}
+  #sales-cards .sc-amt,#pending-cards .sc-amt{font-size:15px;font-weight:700;color:var(--green-dark);flex:0 0 auto;text-align:right;white-space:nowrap}
 }
 </style>
 </head>
@@ -576,10 +583,7 @@ textarea.fc{resize:vertical;min-height:72px}
               <span class="panel-title"><i class="fa fa-box-open" style="color:var(--orange)"></i> ອໍເດີຕ້ອງສົ່ງ</span>
               <div class="filter-bar">
                 <div class="period-tabs" id="pending-period">
-                  <button class="period-tab active" data-p="7day" onclick="setPendingPeriod('7day')">7 ວັນ</button>
-                  <button class="period-tab" data-p="month" onclick="setPendingPeriod('month')">ເດືອນ</button>
-                  <button class="period-tab" data-p="year" onclick="setPendingPeriod('year')">ປີ</button>
-                  <button class="period-tab" data-p="all" onclick="setPendingPeriod('all')">ທັງໝົດ</button>
+                  <button class="period-tab active" data-p="all" onclick="setPendingPeriod('all')">ທັງໝົດ</button>
                   <button class="period-tab icon-only" id="pending-custom-btn" onclick="openDateRangePicker('pending')"><i class="fa fa-calendar"></i></button>
                 </div>
                 <span id="pending-count-label" style="font-size:12px;color:var(--gray-500)"></span>
@@ -614,7 +618,8 @@ textarea.fc{resize:vertical;min-height:72px}
                   <button class="period-tab" data-p="all" onclick="setSalesPeriod('all')">ທັງໝົດ</button>
                   <button class="period-tab icon-only" id="sales-custom-btn" onclick="openDateRangePicker('sales')"><i class="fa fa-calendar"></i></button>
                 </div>
-                <select class="fc" style="width:130px" id="sales-sf" onchange="renderSalesTable()"><option value="">ທຸກສະຖານະ</option><option>ສຳເລັດ</option><option>ລໍຖ້າ</option><option>ຈັດສົ່ງ</option><option>ຍົກເລີກ</option></select>
+                <select class="fc" style="width:130px" id="sales-sf" onchange="renderSalesTable()"><option value="">ທຸກສະຖານະ</option><option>ສຳເລັດ</option><option>ຍົກເລີກ</option></select>
+                <select class="fc" style="width:130px" id="sales-cf" onchange="renderSalesTable()"><option value="">ທຸກຊ່ອງທາງ</option><option>Facebook</option><option>TikTok</option><option>WhatsApp</option><option>ໜ້າຮ້ານ</option><option>ອື່ນໆ</option></select>
                 <button class="btn btn-green" onclick="openSaleModal()"><i class="fa fa-plus"></i> ເພີ່ມ</button>
               </div>
             </div>
@@ -770,7 +775,7 @@ textarea.fc{resize:vertical;min-height:72px}
         <div class="form-section-title">👤 ຂໍ້ມູນລູກຄ້າ</div>
         <div class="form-row cols-2">
           <div><label>ວັນທີ *</label><input class="fc" type="date" id="s-date"></div>
-          <div><label>ຊ່ອງທາງ</label><select class="fc" id="s-channel"><option>Facebook</option><option>TikTok</option><option>LINE</option><option>WhatsApp</option><option>Instagram</option><option>ໜ້າຮ້ານ</option><option>ອື່ນໆ</option></select></div>
+          <div><label>ຊ່ອງທາງ</label><select class="fc" id="s-channel"><option>Facebook</option><option>TikTok</option><option>WhatsApp</option><option>ໜ້າຮ້ານ</option><option>ອື່ນໆ</option></select></div>
         </div>
         <div class="form-row cols-2">
           <div><label>ຊື່ລູກຄ້າ</label><input class="fc" type="text" id="s-cname" placeholder="ຊື່ລູກຄ້າ"></div>
@@ -1098,7 +1103,7 @@ const LAO_GEO = {
 // ══════════════════════════════════════
 let S = {
   user:null, profile:null, company:null, role:null, page:'dashboard',
-  finPeriod:'month', adsPeriod:'7day', repPeriod:'7day', salesPeriod:'7day', pendingPeriod:'7day',
+  finPeriod:'month', adsPeriod:'7day', repPeriod:'7day', salesPeriod:'7day', pendingPeriod:'all',
   salesTab:'pending', dashPeriod:'all', pendingEditMode:false,
   navHistory:[],
   customRanges:{dash:null,fin:null,ads:null,rep:null,sales:null,pending:null},
@@ -1631,7 +1636,7 @@ function renderPendingOrders(){
     </div>`;
   }).join('');
 
-  // ── Mobile card view (ອໍເດີຕ້ອງສົ່ງ): same 4-column layout as ຈັດການຍອດ ──
+  // ── Mobile card view (ອໍເດີຕ້ອງສົ່ງ): 3-row layout, same as ຈັດການຍອດ ──
   if(cardsEl){
     cardsEl.innerHTML=data.map((s,i)=>{
       const tot=s.qty*s.price-(s.discount||0);
@@ -1641,26 +1646,27 @@ function renderPendingOrders(){
       const dist=stripLaoPrefix(br?br.district:(s.district||''),'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
       const shipStyle=shippingCardStyle(s.shipping_company);
+      const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
+      const custBits=[s.customer_phone?esc(s.customer_phone):'',s.customer_name?esc(s.customer_name):''].filter(Boolean).join(' / ')||'-';
       return `<div class="sale-card" onclick="editSale('${s.id}')">
-        <div class="sc-col sc-col1">
-          <div class="sc-idx">${i+1}</div>
-          <input type="checkbox" class="order-card-check sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updatePendingCount()">
+        <div class="sc-row sc-row1">
+          <div class="sc-row1l">
+            <input type="checkbox" class="order-card-check sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updatePendingCount()">
+            <span class="sc-idx">#${i+1}</span>
+            <span class="sc-date">${fmtDate(s.date)}</span>
+          </div>
+          <div class="sc-row1r">
+            ${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}
+            ${s.shipping_company?`<span class="sc-ship-badge"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg}"`:''}>${esc(s.shipping_company)}</span>`:''}
+          </div>
         </div>
-        <div class="sc-col sc-col2">
-          <div class="sc-r">${fmtDate(s.date)}</div>
-          <div class="sc-r">${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:'-'}</div>
-          <div class="sc-r sc-bg"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg};font-weight:600"`:''}>${s.shipping_company?esc(s.shipping_company):'-'}</div>
-          <div class="sc-r sc-bg">${esc(s.product_name||'-')} × ${s.qty}</div>
+        <div class="sc-row sc-row2">
+          <div class="sc-product">${esc(s.product_name||'-')} × ${s.qty}</div>
+          <div class="sc-cust">${custBits}</div>
         </div>
-        <div class="sc-col sc-col3">
-          <div class="sc-r sc-bg">${esc(s.customer_name||'-')}</div>
-          <div class="sc-r sc-bg">${esc(s.customer_phone||'-')}</div>
-          <div class="sc-r sc-bg sc-bg-green">${fmt(tot)} ກີບ</div>
-        </div>
-        <div class="sc-col sc-col4">
-          <div class="sc-r sc-bg">${prov?esc(prov):'-'}</div>
-          <div class="sc-r sc-bg">${dist?esc(dist):'-'}</div>
-          <div class="sc-r sc-bg">${branch?esc(branch):'-'}</div>
+        <div class="sc-row sc-row3">
+          <div class="sc-loc">📍 ${loc}</div>
+          <div class="sc-amt">${fmt(tot)} ກີບ</div>
         </div>
       </div>`;
     }).join('');
@@ -1843,9 +1849,9 @@ function shippingCardStyle(name){
   return null;
 }
 function renderSalesTable(){
-  const q=v('sales-search').toLowerCase(), sf=v('sales-sf');
+  const q=v('sales-search').toLowerCase(), sf=v('sales-sf'), cf=v('sales-cf');
   let data=getSalesPeriodData();
-  data=data.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf));
+  data=data.filter(s=>(!q||(s.product_name||'').toLowerCase().includes(q)||(s.customer_name||'').toLowerCase().includes(q)||(s.customer_phone||'').includes(q))&&(!sf||s.status===sf)&&(!cf||s.channel===cf));
   const tb=document.getElementById('sales-tbody');
   const cardsEl=document.getElementById('sales-cards');
   if(!data.length){
@@ -1875,7 +1881,7 @@ function renderSalesTable(){
     <td><button class="btn-icon edit" onclick="editSale('${s.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delSale('${s.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
   }).join('');
 
-  // ── Mobile card view (ຈັດການຍອດ): 4-column layout per card ──
+  // ── Mobile card view (ຈັດການຍອດ): 3-row layout per card ──
   if(cardsEl){
     cardsEl.innerHTML=data.map((s,i)=>{
       const tot=s.qty*s.price-(s.discount||0);
@@ -1883,26 +1889,27 @@ function renderSalesTable(){
       const dist=stripLaoPrefix(s.district,'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
       const shipStyle=shippingCardStyle(s.shipping_company);
+      const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
+      const custBits=[s.customer_phone?esc(s.customer_phone):'',s.customer_name?esc(s.customer_name):''].filter(Boolean).join(' / ')||'-';
       return `<div class="sale-card" onclick="editSale('${s.id}')">
-        <div class="sc-col sc-col1">
-          <div class="sc-idx">${i+1}</div>
-          <input type="checkbox" class="sale-chk sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updateSalesBulkBar()">
+        <div class="sc-row sc-row1">
+          <div class="sc-row1l">
+            <input type="checkbox" class="sale-chk sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updateSalesBulkBar()">
+            <span class="sc-idx">#${i+1}</span>
+            <span class="sc-date">${fmtDate(s.date)}</span>
+          </div>
+          <div class="sc-row1r">
+            ${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}
+            ${s.shipping_company?`<span class="sc-ship-badge"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg}"`:''}>${esc(s.shipping_company)}</span>`:''}
+          </div>
         </div>
-        <div class="sc-col sc-col2">
-          <div class="sc-r">${fmtDate(s.date)}</div>
-          <div class="sc-r">${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:'-'}</div>
-          <div class="sc-r sc-bg"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg};font-weight:600"`:''}>${s.shipping_company?esc(s.shipping_company):'-'}</div>
-          <div class="sc-r sc-bg">${esc(s.product_name||'-')}</div>
+        <div class="sc-row sc-row2">
+          <div class="sc-product">${esc(s.product_name||'-')}</div>
+          <div class="sc-cust">${custBits}</div>
         </div>
-        <div class="sc-col sc-col3">
-          <div class="sc-r sc-bg">${esc(s.customer_name||'-')}</div>
-          <div class="sc-r sc-bg">${esc(s.customer_phone||'-')}</div>
-          <div class="sc-r sc-bg sc-bg-green">${fmt(tot)} ກີບ</div>
-        </div>
-        <div class="sc-col sc-col4">
-          <div class="sc-r sc-bg">${prov?esc(prov):'-'}</div>
-          <div class="sc-r sc-bg">${dist?esc(dist):'-'}</div>
-          <div class="sc-r sc-bg">${branch?esc(branch):'-'}</div>
+        <div class="sc-row sc-row3">
+          <div class="sc-loc">📍 ${loc}</div>
+          <div class="sc-amt">${fmt(tot)} ກີບ</div>
         </div>
       </div>`;
     }).join('');
@@ -3283,6 +3290,8 @@ function toast(msg,type='success'){
   setTimeout(()=>t.remove(),3500);
 }
 
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // ══════════════════════════════════════
 //  INIT
