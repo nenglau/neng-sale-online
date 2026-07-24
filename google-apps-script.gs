@@ -8,6 +8,9 @@
 //    - Execute as: Me
 //    - Who has access: Anyone
 // 5. ກົດ Deploy ແລ້ວ Copy URL ໄປວາງໃນ Dashboard Settings
+//
+// 6. (ສຳລັບ auto-export ທຸກຄືນ 23:00) ຕື່ມຄ່າ 3 ຕົວໃນ CONFIG ຂ້າງລຸ່ມ
+//    ແລ້ວຕັ້ງ Trigger ຕາມ auto-export-setup.md
 // ============================================================
 
 const SHEET_NAMES = {
@@ -17,12 +20,19 @@ const SHEET_NAMES = {
   ads:      'ໂຄສະນາ'
 };
 
+// Column order here MUST match the order returned by buildRow() below — they're built together.
 const HEADERS = {
-  sales:    ['ID','ວັນທີ','ສິນຄ້າ','ຊ່ອງທາງ','ລູກຄ້າ','ຈຳນວນ','ລາຄາ','ຕົ້ນທຶນ','ຍອດລວມ','ກຳໄລ','ສະຖານະ','ໝາຍເຫດ','ບັນທຶກເວລາ'],
-  finance:  ['ID','ວັນທີ','ລາຍການ','ໝວດ','ປະເພດ','ຈຳນວນ','ໝາຍເຫດ','ບັນທຶກເວລາ'],
+  sales:    ['ID','ວັນທີ','ສິນຄ້າ','ຊ່ອງທາງ','ລູກຄ້າ','ເບີໂທ','ຈຳນວນ','ລາຄາ','ຕົ້ນທຶນ','ສ່ວນຫຼຸດ','ຍອດລວມ','ກຳໄລ','ບໍລິສັດຂົນສົ່ງ','ແຂວງ','ເມືອງ','ສາຂາ','ສະຖານະ','ໝາຍເຫດ','ບັນທຶກເວລາ'],
+  finance:  ['ID','ວັນທີ','ລາຍການ','ໝວດ','ປະເພດ','ຈຳນວນ','ສິນຄ້າ','ໝາຍເຫດ','ບັນທຶກເວລາ'],
   products: ['ID','ຊື່ສິນຄ້າ','SKU','ໝວດ','ລາຄາຂາຍ','ຕົ້ນທຶນ','Stock','ສະຖານະ','ອັບເດດເວລາ'],
   ads:      ['ID','ວັນທີ','ແພລດຟອມ','ຊື່ແຄມເປຍ','ສິນຄ້າ','ງົບ','ໃຊ້ໄປ','ລາຍຮັບ','ROAS','ສະຖານະ','ບັນທຶກເວລາ']
 };
+
+// ============================================================
+// CONFIG — only needed for the daily 23:00 auto-export (see step 6 above)
+// ============================================================
+const SUPABASE_URL = 'https://bhyjvqcgynlxsanptgfq.supabase.co';
+const SUPABASE_SERVICE_KEY = 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE'; // Supabase → Settings → API → service_role (secret)
 
 // ============================================================
 // MAIN ENTRY POINTS
@@ -122,30 +132,88 @@ function syncAll(ss, allData) {
 
 // ============================================================
 // ROW BUILDERS
+// Field names here MUST match the real column names in Supabase / the web app —
+// they do NOT match the old placeholder names (d.product, d.customer, d.desc, d.cat)
+// that were in the original version of this file, which silently produced blank
+// columns in the sheet. Fixed to match: product_name, customer_name, customer_phone,
+// discount, shipping_company, province, district, branch, description, category.
 // ============================================================
 
 function buildRow(sheetKey, d) {
   const now = new Date().toLocaleString('th-TH');
   if (sheetKey === 'sales') {
+    const total = d.qty * d.price - (d.discount || 0);
+    const profit = d.qty * (d.price - d.cost) - (d.discount || 0);
     return [
-      d.id, d.date, d.product, d.channel, d.customer || '',
-      d.qty, d.price, d.cost,
-      d.qty * d.price,
-      d.qty * (d.price - d.cost),
+      d.id, d.date, d.product_name, d.channel, d.customer_name || '', d.customer_phone || '',
+      d.qty, d.price, d.cost, d.discount || 0,
+      total, profit,
+      d.shipping_company || '', d.province || '', d.district || '', d.branch || '',
       d.status, d.note || '', now
     ];
   }
   if (sheetKey === 'finance') {
-    return [d.id, d.date, d.desc, d.cat, d.type, d.amount, d.note || '', now];
+    return [d.id, d.date, d.description, d.category, d.type, d.amount, d.product_name || '', d.note || '', now];
   }
   if (sheetKey === 'products') {
-    return [d.id, d.name, d.sku, d.cat, d.price, d.cost, d.stock, d.status, now];
+    return [d.id, d.name, d.sku || '', d.category, d.price, d.cost, d.stock, d.status, now];
   }
   if (sheetKey === 'ads') {
     const roas = d.spent > 0 ? (d.revenue / d.spent).toFixed(2) : 0;
-    return [d.id, d.date, d.platform, d.name, d.product, d.budget, d.spent, d.revenue, roas, d.status, now];
+    return [d.id, d.date, d.platform, d.name, d.product_name || '', d.budget, d.spent || 0, d.revenue || 0, roas, d.status || '', now];
   }
   return [];
+}
+
+// ============================================================
+// DAILY AUTO-EXPORT (23:00 Vientiane time, via Time-driven Trigger)
+// Sends only sales where exported_to_sheet = false, appends them, then
+// marks them exported so they're never sent again.
+// Requires: `alter table sales add column if not exists exported_to_sheet boolean not null default false;`
+// Setup steps: see auto-export-setup.md
+// ============================================================
+
+function dailyAutoExportSales() {
+  if (SUPABASE_SERVICE_KEY === 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE') {
+    Logger.log('SUPABASE_SERVICE_KEY not set — skipping auto-export.');
+    return;
+  }
+
+  // 1) Fetch only sales not yet exported
+  const listUrl = SUPABASE_URL + '/rest/v1/sales?exported_to_sheet=eq.false&select=*&order=date.asc';
+  const listRes = UrlFetchApp.fetch(listUrl, {
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY
+    },
+    muteHttpExceptions: true
+  });
+  const rows = JSON.parse(listRes.getContentText());
+  if (!rows || !rows.length) { Logger.log('No new sales to export today.'); return; }
+
+  // 2) Append to the sheet using the same buildRow() logic as manual export, so columns always match
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ws = getOrCreateSheet(ss, SHEET_NAMES.sales, HEADERS.sales);
+  const values = rows.map(r => buildRow('sales', r));
+  ws.getRange(ws.getLastRow() + 1, 1, values.length, values[0].length).setValues(values);
+  styleDataRange(ws, values.length);
+
+  // 3) Mark as exported so tomorrow's run never resends these
+  const ids = rows.map(r => r.id).join(',');
+  const patchUrl = SUPABASE_URL + '/rest/v1/sales?id=in.(' + ids + ')';
+  UrlFetchApp.fetch(patchUrl, {
+    method: 'patch',
+    contentType: 'application/json',
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY,
+      Prefer: 'return=minimal'
+    },
+    payload: JSON.stringify({ exported_to_sheet: true }),
+    muteHttpExceptions: true
+  });
+
+  Logger.log('Exported ' + rows.length + ' sales.');
 }
 
 // ============================================================
