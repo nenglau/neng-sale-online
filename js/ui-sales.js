@@ -381,17 +381,23 @@ async function bulkDeleteSales(){
   renderSalesTable(); updatePendingCount();
 }
 let _editingOriginalStatus=null;
-function toggleCancelFeeSection(){
-  const show=v('s-status')==='ຍົກເລີກ';
-  const el=document.getElementById('cancel-fee-section');
-  if(el) el.style.display=show?'block':'none';
+async function onSaleStatusChange(){
+  if(v('s-status')!=='ຍົກເລີກ') return;
+  const ok=await showConfirm({title:'ຍົກເລີກອອເດີ',message:'ຕົກລົງບໍ່ ວ່າຈະຍົກເລີກອອເດີນີ້?',icon:'⚠️',confirmText:'ຕົກລົງ',cancelText:'ປິດ'});
+  if(!ok){ sv('s-status',_editingOriginalStatus||'ລໍຖ້າ'); return; }
+  const prod=v('s-prod');
+  openFinanceModal();
+  sv('f-date',today());
+  sv('f-type','ລາຍຈ່າຍ');
+  ensureCancelCategory();
+  sv('f-cat','ຄ່າຕີກັບ');
+  sv('f-product',prod);
 }
 function openSaleModal(){
   sv('sale-id',''); document.getElementById('sale-modal-title').textContent='ເພີ່ມການຂາຍໃໝ່';
   // Reset to add mode: only ລໍຖ້າ
   document.getElementById('s-status').innerHTML='<option>ລໍຖ້າ</option>';
   _editingOriginalStatus=null;
-  sv('s-cancel-shipfee',''); sv('s-cancel-note',''); toggleCancelFeeSection();
   sv('s-date',today()); sv('s-cname',''); sv('s-cphone',''); sv('s-ship','');
   populateProvinces(); sv('s-prov',''); sv('s-dist',''); sv('s-branch','');
   sv('s-prod',''); sv('s-qty',1); sv('s-price',''); sv('s-cost',''); sv('s-disc',0); sv('s-status','ລໍຖ້າ'); sv('s-note','');
@@ -412,7 +418,6 @@ function editSale(id){
   sv('s-branch',s.branch||''); sv('s-prod',s.product_name||'');
   sv('s-qty',s.qty); sv('s-price',s.price); sv('s-cost',s.cost);
   sv('s-disc',s.discount||0); sv('s-status',s.status); sv('s-note',s.note||'');
-  sv('s-cancel-shipfee',''); sv('s-cancel-note',''); toggleCancelFeeSection();
   buildShipCombo(); buildProvCombo(); buildDistCombo(); buildBranchCombo(); buildProdCombo(); calcTotal(); openModal('modal-sale');
 }
 let _savingSale=false;
@@ -462,16 +467,6 @@ async function saveSale(){
     if(eid){const{error}=await sb.from('sales').update(pl).eq('id',eid);err=error;if(!err)S.db.sales=S.db.sales.map(x=>x.id===eid?{...x,...pl}:x);}
     else{const{data,error}=await sb.from('sales').insert(pl).select().single();err=error;if(!err)S.db.sales.unshift(data);}
     if(err){toast(err.message,'error');return;}
-
-    // Cancelled order + shipping-cost entered → log it as a linked expense in ການເງິນ (once per transition into ຍົກເລີກ)
-    const newStatus=v('s-status');
-    const cancelFee=+v('s-cancel-shipfee')||0;
-    if(newStatus==='ຍົກເລີກ' && _editingOriginalStatus!=='ຍົກເລີກ' && cancelFee>0){
-      const finPl={company_id:S.company.id,user_id:S.user.id,date:today(),description:'ຕີກັບ',category:'ຄ່າຂົນສົ່ງ',type:'ລາຍຈ່າຍ',amount:cancelFee,product_name:prod,note:v('s-cancel-note')||null};
-      const{data:finData,error:finErr}=await sb.from('finance').insert(finPl).select().single();
-      if(finErr){toast('ບັນທຶກຄ່າຂົນສົ່ງບໍ່ສຳເລັດ: '+finErr.message,'error');}
-      else if(finData){S.db.finance.unshift(finData);}
-    }
 
     closeModal('modal-sale'); toast('ບັນທຶກສຳເລັດ ✓','success'); renderSalesPage();
   }catch(e){

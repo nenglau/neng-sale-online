@@ -422,11 +422,7 @@
         </div>
         <div class="form-row cols-2">
           <div><label>ສ່ວນຫຼຸດ (₭)</label><input class="fc" type="number" id="s-disc" placeholder="0" oninput="calcTotal()"></div>
-          <div><label>ສະຖານະ</label><select class="fc" id="s-status" onchange="toggleCancelFeeSection()"><option>ລໍຖ້າ</option></select></div>
-        </div>
-        <div class="form-row cols-2" id="cancel-fee-section" style="display:none">
-          <div><label>ຄ່າຂົນສົ່ງ (ຕີກັບ) ₭</label><input class="fc" type="number" id="s-cancel-shipfee" placeholder="0"></div>
-          <div><label>ໝາຍເຫດ ຄ່າຂົນສົ່ງ</label><input class="fc" type="text" id="s-cancel-note" placeholder="ບໍ່ບັງຄັບ"></div>
+          <div><label>ສະຖານະ</label><select class="fc" id="s-status" onchange="onSaleStatusChange()"><option>ລໍຖ້າ</option></select></div>
         </div>
         <div id="sale-calc" style="background:var(--green-hover);border-radius:var(--radius);padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px">
           <div><div style="color:var(--gray-500)">ຍອດລວມ</div><strong id="c-total" style="font-size:16px;color:var(--green)">0 ₭</strong></div>
@@ -456,7 +452,6 @@
         <div><label>ວັນທີ *</label><input class="fc" type="date" id="f-date"></div>
         <div><label>ປະເພດ</label><select class="fc" id="f-type"><option>ລາຍຮັບ</option><option>ລາຍຈ່າຍ</option></select></div>
       </div>
-      <div class="form-row"><div><label>ລາຍການ *</label><input class="fc" type="text" id="f-desc" placeholder="ຄຳອະທິບາຍ"></div></div>
       <div class="form-row"><div><label>ສິນຄ້າ *</label><select class="fc" id="f-product"><option value="">-- ເລືອກສິນຄ້າ --</option></select></div></div>
       <div class="form-row cols-2">
         <div><label>ໝວດ</label><div style="display:flex;gap:8px"><select class="fc" id="f-cat"></select><button class="btn btn-outline btn-sm" onclick="openCatModal()" title="จัดการหมวดหมู่"><i class="fa fa-cog"></i></button></div></div>

@@ -31,9 +31,14 @@ function renderFin(){
 function getCategories(){
   const stored=localStorage.getItem('finance_categories');
   if(stored) return JSON.parse(stored);
-  const defaultCats=['ຍອດຂາຍ','ຄ່າໂຄສະນາ','ຄ່າຈ້າງ','ຄ່າເຊົ່າ','ຄ່າຂົນສົ່ງ','ອຸປະກອນ','ອື່ນໆ'];
+  const defaultCats=['ຍອດຂາຍ','ຄ່າໂຄສະນາ','ຄ່າຈ້າງ','ຄ່າເຊົ່າ','ຄ່າຂົນສົ່ງ','ຄ່າຕີກັບ','ອຸປະກອນ','ອື່ນໆ'];
   localStorage.setItem('finance_categories',JSON.stringify(defaultCats));
   return defaultCats;
+}
+function ensureCancelCategory(){
+  const cats=getCategories();
+  if(!cats.includes('ຄ່າຕີກັບ')){ cats.push('ຄ່າຕີກັບ'); saveCategories(cats); }
+  loadCatDropdown();
 }
 function saveCategories(cats){
   localStorage.setItem('finance_categories',JSON.stringify(cats));
@@ -91,20 +96,20 @@ function populateFinProductDropdown(){
   sel.innerHTML='<option value="">-- ເລືອກສິນຄ້າ --</option>'+(S.db.products||[]).map(p=>`<option>${esc(p.name)}</option>`).join('');
   if(currentVal) sel.value=currentVal;
 }
-function openFinanceModal(){loadCatDropdown();populateFinProductDropdown();sv('fin-id','');document.getElementById('fin-title').textContent='ເພີ່ມລາຍການ';sv('f-date',today());sv('f-type','ລາຍຮັບ');sv('f-desc','');sv('f-cat','ຍອດຂາຍ');sv('f-product','');sv('f-amount','');sv('f-note','');openModal('modal-finance');}
+function openFinanceModal(){loadCatDropdown();populateFinProductDropdown();sv('fin-id','');document.getElementById('fin-title').textContent='ເພີ່ມລາຍການ';sv('f-date',today());sv('f-type','ລາຍຮັບ');sv('f-cat','ຍອດຂາຍ');sv('f-product','');sv('f-amount','');sv('f-note','');openModal('modal-finance');}
 function editFin(id){
   const f=S.db.finance.find(x=>x.id===id); if(!f) return;
   loadCatDropdown();
   populateFinProductDropdown();
   document.getElementById('fin-title').textContent='ແກ້ໄຂລາຍການ';
-  sv('fin-id',id);sv('f-date',f.date);sv('f-type',f.type);sv('f-desc',f.description);sv('f-cat',f.category||'');sv('f-product',f.product_name||'');sv('f-amount',f.amount);sv('f-note',f.note||'');
+  sv('fin-id',id);sv('f-date',f.date);sv('f-type',f.type);sv('f-cat',f.category||'');sv('f-product',f.product_name||'');sv('f-amount',f.amount);sv('f-note',f.note||'');
   openModal('modal-finance');
 }
 async function saveFinance(){
-  const date=v('f-date'),desc=v('f-desc'),amt=+v('f-amount'),product=v('f-product');
-  if(!date||!desc||!amt){toast('ກະລຸນາປ້ອນຂໍ້ມູນ','error');return;}
+  const date=v('f-date'),amt=+v('f-amount'),product=v('f-product'),cat=v('f-cat');
+  if(!date||!amt){toast('ກະລຸນາປ້ອນຂໍ້ມູນ','error');return;}
   if(!product){toast('ກະລຸນາເລືອກສິນຄ້າ','error');return;}
-  const pl={company_id:S.company.id,user_id:S.user.id,date,description:desc,category:v('f-cat'),type:v('f-type'),amount:amt,product_name:product,note:v('f-note')||null};
+  const pl={company_id:S.company.id,user_id:S.user.id,date,description:cat,category:cat,type:v('f-type'),amount:amt,product_name:product,note:v('f-note')||null};
   const eid=v('fin-id'); let err;
   if(eid){const{error}=await sb.from('finance').update(pl).eq('id',eid);err=error;if(!err)S.db.finance=S.db.finance.map(x=>x.id===eid?{...x,...pl}:x);}
   else{const{data,error}=await sb.from('finance').insert(pl).select().single();err=error;if(!err)S.db.finance.unshift(data);}
