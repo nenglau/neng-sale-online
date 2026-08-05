@@ -385,16 +385,6 @@ function goBack(){
   navigate(prev, false);
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
-// Close sidebar on mobile when clicking outside (right side content)
-document.addEventListener('click',e=>{
-  if(window.innerWidth<=768){
-    const sidebar=document.getElementById('sidebar');
-    const menuBtn=document.getElementById('menu-btn');
-    if(sidebar.classList.contains('open') && !sidebar.contains(e.target) && !menuBtn.contains(e.target)){
-      sidebar.classList.remove('open');
-    }
-  }
-});
 function renderPage(p){
   if(p==='dashboard') renderDash();
   else if(p==='sales') renderSalesPage();
@@ -527,7 +517,8 @@ function toast(msg,type='success'){
   setTimeout(()=>t.remove(),3500);
 }
 
-// Modals now only close via X button (no click-outside-to-close)
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // ══════════════════════════════════════
 //  INIT

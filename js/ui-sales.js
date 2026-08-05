@@ -317,6 +317,7 @@ function renderSalesTable(){
             <span class="sc-date">${fmtDate(s.date)}</span>
           </div>
           <div class="sc-row1r">
+            ${badge(s.status)}
             ${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}
             ${s.shipping_company?`<span class="sc-ship-badge"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg}"`:''}>${esc(s.shipping_company)}</span>`:''}
           </div>

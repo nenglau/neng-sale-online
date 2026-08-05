@@ -109,7 +109,7 @@ async function saveFinance(){
   const date=v('f-date'),amt=+v('f-amount'),product=v('f-product'),cat=v('f-cat');
   if(!date||!amt){toast('ກະລຸນາປ້ອນຂໍ້ມູນ','error');return;}
   if(!product){toast('ກະລຸນາເລືອກສິນຄ້າ','error');return;}
-  const pl={company_id:S.company.id,user_id:S.user.id,date,description:cat,category:cat,type:v('f-type'),amount:amt,product_name:product,note:v('f-note')||null};
+  const pl={company_id:S.company.id,user_id:S.user.id,date,description:product,category:cat,type:v('f-type'),amount:amt,product_name:product,note:v('f-note')||null};
   const eid=v('fin-id'); let err;
   if(eid){const{error}=await sb.from('finance').update(pl).eq('id',eid);err=error;if(!err)S.db.finance=S.db.finance.map(x=>x.id===eid?{...x,...pl}:x);}
   else{const{data,error}=await sb.from('finance').insert(pl).select().single();err=error;if(!err)S.db.finance.unshift(data);}

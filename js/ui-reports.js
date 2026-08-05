@@ -72,7 +72,7 @@ function renderRepCities(data){
     if(!pm[prov])pm[prov]={prov,count:0};
     pm[prov].count+=1;
   });
-  const top=Object.values(pm).sort((a,b)=>b.count-a.count).slice(0,4);
+  const top=Object.values(pm).sort((a,b)=>b.count-a.count);
   el.innerHTML=top.length?top.map((c,i)=>{
     const pct=totalOrders>0?((c.count/totalOrders)*100).toFixed(1):'0.0';
     return `<div class="rep-city-row">

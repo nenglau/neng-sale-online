@@ -177,7 +177,7 @@ textarea.fc{resize:vertical;min-height:72px}
 .title-mobile{display:none}
 .chart-wrap{position:relative;height:240px}
 .chart-wrap canvas{max-width:100%}
-.rep-city-list{height:240px;overflow-y:auto}
+.rep-city-list{height:auto}
 .rep-city-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-200)}
 .rep-city-row:last-child{border-bottom:none}
 .rep-city-rank{width:24px;height:24px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
