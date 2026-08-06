@@ -50,7 +50,7 @@ function renderPendingOrders(){
       <input type="checkbox" class="order-card-check" id="chk-${s.id}" onchange="updatePendingCount()">
       <div class="order-card-row">
         <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:12px"></i> ${fmtDate(s.date)}</div>
-        <div class="order-field"><strong style="font-size:14px">${esc(s.customer_name||'—')}</strong></div>
+        <div class="order-field"><strong style="font-size:14px"><i class="fa fa-user" style="font-size:12px;color:var(--gray-500);margin-right:4px"></i>${esc(s.customer_name||'—')}</strong></div>
         <div class="order-field" style="font-weight:700;font-size:15px;color:var(--blue)">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px"></i> ${esc(s.customer_phone)}`:'—'}</div>
         <div class="order-field">${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}</div>
         <div class="order-field highlight"><i class="fa fa-box" style="font-size:12px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
@@ -62,7 +62,7 @@ function renderPendingOrders(){
       </div>
       ${shipLine.length?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         ${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)}"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
-        ${shipLine.length?`<span style="font-size:13px;color:var(--gray-700);font-weight:600"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
+        ${shipLine.length?`<span style="font-size:14px;color:var(--gray-700);font-weight:600"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
       </div>`:''}
     </div>`;
   }).join('');
@@ -78,7 +78,9 @@ function renderPendingOrders(){
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
       const shipStyle=shippingCardStyle(s.shipping_company);
       const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
-      const custBits=[s.customer_phone?esc(s.customer_phone):'',s.customer_name?esc(s.customer_name):''].filter(Boolean).join(' / ')||'-';
+      const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
+      const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
+      const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
       return `<div class="sale-card" onclick="editSale('${s.id}')">
         <div class="sc-row sc-row1">
           <div class="sc-row1l">
@@ -92,8 +94,8 @@ function renderPendingOrders(){
           </div>
         </div>
         <div class="sc-row sc-row2">
-          <div class="sc-product">${esc(s.product_name||'-')} × ${s.qty}</div>
           <div class="sc-cust">${custBits}</div>
+          <div class="sc-product">${esc(s.product_name||'-')} × ${s.qty}</div>
         </div>
         <div class="sc-row sc-row3">
           <div class="sc-loc">📍 ${loc}</div>
@@ -284,12 +286,12 @@ function renderSalesTable(){
     <td>${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:'-'}</td>
     <td>${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)};font-size:11px;padding:2px 8px">${esc(s.shipping_company)}</span>`:'-'}</td>
     <td>
-      <div style="font-weight:600;font-size:14px">${esc(s.customer_name||'-')}</div>
-      <div style="font-weight:700;font-size:15px;color:var(--blue);margin-top:4px">${s.customer_phone||'-'}</div>
-      <div style="font-size:13px;color:var(--gray-700);margin-top:2px">
+      <div style="font-weight:600;font-size:14px"><i class="fa fa-user" style="font-size:12px;color:var(--gray-500);margin-right:4px"></i>${esc(s.customer_name||'-')}</div>
+      <div style="font-weight:700;font-size:15px;color:var(--blue);margin-top:4px">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px;margin-right:4px"></i>${esc(s.customer_phone)}`:'-'}</div>
+      <div style="font-size:14px;color:var(--gray-700);margin-top:2px">
         ${s.district?esc(s.district):''}${s.district && s.province?', ':''}${s.province?esc(s.province):''}
       </div>
-      <div style="font-size:12px;color:var(--gray-500)">${s.branch?esc(s.branch):''}</div>
+      <div style="font-size:14px;color:var(--gray-500)">${s.branch?esc(s.branch):''}</div>
     </td>
     <td style="text-align:center">${s.qty}</td><td>${fmt(s.price)} ₭</td>
     <td style="color:var(--orange)">${s.discount?fmt(s.discount)+' ₭':'-'}</td>
@@ -308,7 +310,9 @@ function renderSalesTable(){
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
       const shipStyle=shippingCardStyle(s.shipping_company);
       const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
-      const custBits=[s.customer_phone?esc(s.customer_phone):'',s.customer_name?esc(s.customer_name):''].filter(Boolean).join(' / ')||'-';
+      const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
+      const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
+      const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
       return `<div class="sale-card" onclick="editSale('${s.id}')">
         <div class="sc-row sc-row1">
           <div class="sc-row1l">
@@ -323,8 +327,8 @@ function renderSalesTable(){
           </div>
         </div>
         <div class="sc-row sc-row2">
-          <div class="sc-product">${esc(s.product_name||'-')}</div>
           <div class="sc-cust">${custBits}</div>
+          <div class="sc-product">${esc(s.product_name||'-')}</div>
         </div>
         <div class="sc-row sc-row3">
           <div class="sc-loc">📍 ${loc}</div>
