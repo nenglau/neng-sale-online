@@ -48,13 +48,10 @@ function renderDash(){
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">ຍອດຂາຍ (ສຳເລັດ)</div><div class="stat-value">${fmt(rev)}</div><div class="stat-sub">₭</div></div>
     <div class="stat-card"><span class="stat-icon">📈</span><div class="stat-label">ກຳໄລລວມ</div><div class="stat-value" style="color:var(--green)">${fmt(prof)}</div><div class="stat-sub">₭</div></div>
-    <div class="stat-card blue"><span class="stat-icon">📦</span><div class="stat-label">order ທັງໝົດ</div><div class="stat-value">${totalOrders}</div><div class="stat-sub">ລາຍການ</div></div>
+    <div class="stat-card blue"><span class="stat-icon">📦</span><div class="stat-label">order ສຳເລັດ</div><div class="stat-value">${totalOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">order ຍົກເລີກ</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value">${fmt(exp)}</div><div class="stat-sub">₭</div></div>`;
-  const tbody=document.getElementById('dash-recent');
-  const rec=filteredSales.slice(0,10);
-  tbody.innerHTML=rec.length?rec.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${esc(s.product_name||'-')}</td><td>${esc(s.customer_name||'-')}</td><td>${s.qty}</td><td style="font-weight:700">${fmt(s.qty*s.price-(s.discount||0))} ₭</td><td>${badge(s.status)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-500)">ຍັງບໍ່ມີຂໍ້ມູນ</td></tr>';
-  draw7Days(filteredSales); drawChannel(filteredSales,filteredFin);
+  drawChannel(filteredSales,filteredFin);
 }
 function draw7Days(filteredSales){
   const ctx=document.getElementById('chart-sales7'); if(!ctx) return;

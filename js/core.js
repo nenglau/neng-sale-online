@@ -4,7 +4,7 @@
 const SB_URL = 'https://bhyjvqcgynlxsanptgfq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJoeWp2cWNneW5seHNhbnB0Z2ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMjI3NTcsImV4cCI6MjA5Mzc5ODc1N30.XrmedfWjYAaTKgO5YM2wXz2a-IoygEZ_DVADaMkDKKI';
 const sb = supabase.createClient(SB_URL, SB_KEY);
-let GAS_URL = localStorage.getItem('gas_url') || '';
+let GAS_URL = '';
 
 // ══════════════════════════════════════
 //  STATE
@@ -178,15 +178,17 @@ async function loadCompanyScreen(){
   });
 }
 async function selectCompany(id,name,logo,role){
-  // Reload company data from Supabase to ensure latest data (including logo)
+  // Reload company data from Supabase to ensure latest data (including logo and gas_url)
   const{data:coData}=await sb.from('companies').select('*').eq('id',id).single();
   if(coData){
-    S.company={id,name:coData.name,logo:coData.logo_url}; S.role=role;
+    S.company={id,name:coData.name,logo:coData.logo_url,gas_url:coData.gas_url}; S.role=role;
+    GAS_URL=coData.gas_url||'';
   }else{
-    S.company={id,name,logo}; S.role=role;
+    S.company={id,name,logo,gas_url:''}; S.role=role;
+    GAS_URL='';
   }
   // Save company for refresh restore
-  try{ localStorage.setItem('hg_company', JSON.stringify({id,name:S.company.name,logo:S.company.logo,role})); }catch(e){}
+  try{ localStorage.setItem('hg_company', JSON.stringify({id,name:S.company.name,logo:S.company.logo,gas_url:S.company.gas_url,role})); }catch(e){}
   await loadData();
   setupApp();
   setupRealtime();

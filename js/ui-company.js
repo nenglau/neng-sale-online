@@ -13,12 +13,12 @@ function renderCoInfo(){
             <div id="co-display-mode">
               <div class="form-group"><label>Logo</label><div class="sidebar-logo" style="width:56px;height:56px;font-size:28px">${S.company.logo?`<img src="${S.company.logo}">`:esc(S.company.name[0]||'🌿')}</div></div>
               <div class="form-group"><label>ຊື່</label><div style="font-weight:600">${esc(S.company.name)}</div></div>
-              <div class="form-group"><label>Google Apps Script URL</label><div style="font-size:13px;color:var(--gray-700)">${esc(GAS_URL)||'—'}</div></div>
+              <div class="form-group"><label>Google Apps Script URL</label><div style="font-size:13px;color:var(--gray-700)">${esc(S.company.gas_url)||'—'}</div></div>
             </div>
             <div id="co-edit-mode" style="display:none">
               <div class="form-group"><label>Logo</label><div style="display:flex;align-items:center;gap:12px"><div class="sidebar-logo" style="width:56px;height:56px;font-size:28px">${S.company.logo?`<img src="${S.company.logo}">`:esc(S.company.name[0]||'🌿')}</div><div><input type="file" id="co-logo" accept="image/*" style="display:none" onchange="uploadCompanyLogo(this)"><button class="btn btn-outline btn-sm" id="btn-upload-logo" onclick="document.getElementById('co-logo').click()"><i class="fa fa-upload"></i> ອັບໂຫຼດ</button></div></div><div id="logo-progress" style="display:none;margin-top:8px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden"><div id="logo-progress-bar" style="height:100%;background:var(--green);width:0%;transition:width 0.2s"></div></div><span id="logo-progress-text" style="font-size:11px;color:var(--gray-500)">0%</span></div></div></div>
               <div class="form-group"><label>ຊື່ *</label><input class="fc" id="co-name" value="${esc(S.company.name)}"></div>
-              <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(GAS_URL)}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
+              <div class="form-group"><label>Google Apps Script URL</label><input class="fc" id="co-gas" value="${esc(S.company.gas_url||'')}" placeholder="https://script.google.com/..."><div style="font-size:11px;color:var(--gray-500);margin-top:4px">ໃຊ້ສຳລັບ Export ໄປ Google Sheets</div></div>
               <div style="display:flex;gap:8px"><button class="btn btn-green" onclick="saveCoSettings()">💾 ບັນທຶກ</button><button class="btn btn-outline" onclick="toggleCoEdit()">ຍົກເລີກ</button></div>
             </div>
           </div>
@@ -402,14 +402,15 @@ async function saveCoSettings(){
   });
   if(!confirmed) return;
   const name=v('co-name'),gas=v('co-gas');
-  const{error}=await sb.from('companies').update({name}).eq('id',S.company.id);
+  const{error}=await sb.from('companies').update({name,gas_url:gas||null}).eq('id',S.company.id);
   if(error){toast(error.message,'error');return;}
-  // Reload company data from Supabase to ensure latest data (including logo)
+  // Reload company data from Supabase to ensure latest data (including logo and gas_url)
   const{data:coData}=await sb.from('companies').select('*').eq('id',S.company.id).single();
   if(coData){
     S.company.name=coData.name;
     S.company.logo=coData.logo_url;
-    GAS_URL=gas; localStorage.setItem('gas_url',gas);
+    S.company.gas_url=coData.gas_url;
+    GAS_URL=coData.gas_url||'';
   }
   try{localStorage.setItem('hg_company',JSON.stringify({...S.company,role:S.role}));}catch(e){}
   document.getElementById('sb-company-name').textContent=S.company.name;
