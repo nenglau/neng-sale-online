@@ -154,6 +154,30 @@ async function markShippedAndPrint(){
   const badge=document.getElementById('tab-pending-badge');
   if(badge) badge.textContent=cnt;
 }
+async function bulkDeletePending(){
+  const checked=visibleOrderChks().filter(c=>c.checked);
+  if(!checked.length){toast('ກະລຸນາເລືອກລາຍການ','error');return;}
+  const ids=checked.map(orderChkId);
+  const confirmed=await showConfirm({
+    title:'ຢືນຍັນລົບ',
+    message:`ລົບ ${ids.length} ລາຍການທີ່ເລືອກ?\nການກະທຳນີ້ບໍ່ສາມາດຍ້ອນກັບໄດ້`,
+    icon:'🗑ฺ',
+    confirmText:'ລົບ',
+    cancelText:'ຍົກເລີກ',
+    type:'danger'
+  });
+  if(!confirmed) return;
+  const{error}=await sb.from('sales').delete().in('id',ids);
+  if(error){toast(error.message,'error');return;}
+  S.db.sales=S.db.sales.filter(s=>!ids.includes(s.id));
+  toast(`ລົບ ${ids.length} ລາຍການສຳເລັດ`,'success');
+  S.pendingEditMode=false;
+  renderPendingOrders();
+  // Update badge
+  const cnt=S.db.sales.filter(s=>s.status==='ລໍຖ້າ').length;
+  const badge=document.getElementById('tab-pending-badge');
+  if(badge) badge.textContent=cnt;
+}
 function printShippingOrders(orders){
   const seller=getSellerInfo();
   const cards=orders.map((s,idx)=>{

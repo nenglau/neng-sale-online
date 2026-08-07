@@ -56,8 +56,10 @@ function drawRepSales(data){
 function getSaleLocation(s){
   const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
   const br=sc?S.db.systemBranches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
-  const prov=br?br.province:(s.province||'');
-  const dist=br?br.district:(s.district||'');
+  const provRaw=br?br.province:(s.province||'');
+  const distRaw=br?br.district:(s.district||'');
+  const prov=stripLaoPrefix(provRaw,'ແຂວງ');
+  const dist=stripLaoPrefix(distRaw,'ເມືອງ');
   const city=dist||prov||'ບໍ່ລະບຸ';
   const key=`${prov||'—'}|${dist||'—'}`;
   return {key,city,prov:prov||'—'};
