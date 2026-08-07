@@ -199,19 +199,24 @@ function dailyAutoExportSales() {
   styleDataRange(ws, values.length);
 
   // 3) Mark as exported so tomorrow's run never resends these
-  const ids = rows.map(r => r.id).join(',');
-  const patchUrl = SUPABASE_URL + '/rest/v1/sales?id=in.(' + ids + ')';
-  UrlFetchApp.fetch(patchUrl, {
-    method: 'patch',
-    contentType: 'application/json',
-    headers: {
-      apikey: SUPABASE_SERVICE_KEY,
-      Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY,
-      Prefer: 'return=minimal'
-    },
-    payload: JSON.stringify({ exported_to_sheet: true }),
-    muteHttpExceptions: true
-  });
+  // Batch the PATCH requests to avoid URL length limit
+  const ids = rows.map(r => r.id);
+  const batchSize = 50;
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    const patchUrl = SUPABASE_URL + '/rest/v1/sales?id=in.(' + batch.join(',') + ')';
+    UrlFetchApp.fetch(patchUrl, {
+      method: 'patch',
+      contentType: 'application/json',
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY,
+        Prefer: 'return=minimal'
+      },
+      payload: JSON.stringify({ exported_to_sheet: true }),
+      muteHttpExceptions: true
+    });
+  }
 
   Logger.log('Exported ' + rows.length + ' sales.');
 }
