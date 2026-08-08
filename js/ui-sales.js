@@ -76,12 +76,11 @@ function renderPendingOrders(){
       const prov=stripLaoPrefix(br?br.province:(s.province||''),'ແຂວງ');
       const dist=stripLaoPrefix(br?br.district:(s.district||''),'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
-      const shipStyle=shippingCardStyle(s.shipping_company);
       const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
       const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
       const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
       const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
-      return `<div class="sale-card" onclick="editSale('${s.id}')">
+      return `<div class="sale-card">
         <div class="sc-row sc-row1">
           <div class="sc-row1l">
             <input type="checkbox" class="order-card-check sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updatePendingCount()">
@@ -90,7 +89,8 @@ function renderPendingOrders(){
           </div>
           <div class="sc-row1r">
             ${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}
-            ${s.shipping_company?`<span class="sc-ship-badge"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg}"`:''}>${esc(s.shipping_company)}</span>`:''}
+            ${s.shipping_company?`<span class="sc-ship-badge" style="color:${getShippingCompanyTextColor(s.shipping_company)};background:${getShippingCompanyColor(s.shipping_company)}">${esc(s.shipping_company)}</span>`:''}
+            <button class="btn-icon edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ"><i class="fa fa-pen"></i></button>
           </div>
         </div>
         <div class="sc-row sc-row2">
@@ -332,12 +332,11 @@ function renderSalesTable(){
       const prov=stripLaoPrefix(s.province,'ແຂວງ');
       const dist=stripLaoPrefix(s.district,'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
-      const shipStyle=shippingCardStyle(s.shipping_company);
       const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
       const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
       const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
       const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
-      return `<div class="sale-card" onclick="editSale('${s.id}')">
+      return `<div class="sale-card">
         <div class="sc-row sc-row1">
           <div class="sc-row1l">
             <input type="checkbox" class="sale-chk sc-chk" data-id="${s.id}" onclick="event.stopPropagation()" onchange="updateSalesBulkBar()">
@@ -347,7 +346,8 @@ function renderSalesTable(){
           <div class="sc-row1r">
             ${badge(s.status)}
             ${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}
-            ${s.shipping_company?`<span class="sc-ship-badge"${shipStyle?` style="color:${shipStyle.color};background:${shipStyle.bg}"`:''}>${esc(s.shipping_company)}</span>`:''}
+            ${s.shipping_company?`<span class="sc-ship-badge" style="color:${getShippingCompanyTextColor(s.shipping_company)};background:${getShippingCompanyColor(s.shipping_company)}">${esc(s.shipping_company)}</span>`:''}
+            <button class="btn-icon edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ"><i class="fa fa-pen"></i></button>
           </div>
         </div>
         <div class="sc-row sc-row2">

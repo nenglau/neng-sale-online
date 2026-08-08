@@ -27,15 +27,6 @@ function stripLaoPrefix(str,prefix){
   const s=String(str).trim();
   return s.startsWith(prefix)?s.substring(prefix.length).trim():s;
 }
-function shippingCardStyle(name){
-  if(!name) return null;
-  const n=name.trim();
-  if(n==='ອານຸສິດ') return {color:'#c62828',bg:'#ffebee'};
-  if(n==='ຮຸ່ງອາລຸນ') return {color:'#1565c0',bg:'#e3f2fd'};
-  if(n==='ມີໄຊຂົນສົ່ງ') return {color:'#8d6e00',bg:'#fff8e1'};
-  return null;
-}
-
 // ══════════════════════════════════════
 //  GEO
 // ══════════════════════════════════════
@@ -63,7 +54,12 @@ function updateDistricts(sel=''){
 // ══════════════════════════════════════
 function getShippingCompanyColor(name){
   if(!name) return '#e0e0e0';
-  // Generate consistent color based on name hash
+  const n=name.trim();
+  // Use fixed colors for special shipping companies to match mobile cards
+  if(n==='ອານຸສິດ') return '#ffebee';
+  if(n==='ຮຸ່ງອາລຸນ') return '#e3f2fd';
+  if(n==='ມີໄຊຂົນສົ່ງ') return '#fff8e1';
+  // Generate consistent color based on name hash for other companies
   let hash=0;
   for(let i=0;i<name.length;i++){
     hash=name.charCodeAt(i)+((hash<<5)-hash);
@@ -73,6 +69,12 @@ function getShippingCompanyColor(name){
 }
 function getShippingCompanyTextColor(name){
   if(!name) return '#616161';
+  const n=name.trim();
+  // Use fixed text colors for special shipping companies to match mobile cards
+  if(n==='ອານຸສິດ') return '#c62828';
+  if(n==='ຮຸ່ງອາລຸນ') return '#1565c0';
+  if(n==='ມີໄຊຂົນສົ່ງ') return '#8d6e00';
+  // Generate consistent color based on name hash for other companies
   let hash=0;
   for(let i=0;i<name.length;i++){
     hash=name.charCodeAt(i)+((hash<<5)-hash);

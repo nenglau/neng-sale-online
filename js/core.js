@@ -322,7 +322,7 @@ function setupRealtime(){
 // ══════════════════════════════════════
 //  NAVIGATE
 // ══════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',sales:'ຈັດການຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ','co-shipping':'ບໍລິສັດຂົນສົ່ງ'};
+const PAGE_TITLES={dashboard:'Dashboard',sales:'ຈັດການຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ'};
 function toggleSettings(){
   const sub=document.getElementById('settings-submenu');
   const arr=document.getElementById('settings-arrow');
@@ -338,7 +338,7 @@ function navigate(page, pushHistory=true){
     if(S.navHistory.length>20) S.navHistory.shift();
   }
   // auto-open settings submenu for settings pages
-  if(page==='co-info'||page==='co-shipping'){
+  if(page==='co-info'){
     document.getElementById('settings-submenu').style.display='block';
     document.getElementById('settings-arrow').style.transform='rotate(90deg)';
   }
@@ -405,7 +405,6 @@ function renderPage(p){
   else if(p==='ads') renderAds();
   else if(p==='reports') renderReports();
   else if(p==='company'||p==='co-info') renderCoInfo();
-  else if(p==='co-shipping') renderCoShipping();
 }
 
 // ══════════════════════════════════════
