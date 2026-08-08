@@ -114,11 +114,12 @@ datalist option{font-family:'Noto Sans Lao',sans-serif}
 
 /* DASHBOARD MID STATS */
 .dash-mid-stats{display:flex;gap:16px;margin-bottom:24px;justify-content:center}
-.mid-stat-card{background:var(--white);border-radius:var(--radius-lg);padding:16px 24px;box-shadow:var(--shadow-sm);border-left:4px solid var(--green-light);flex:1;max-width:300px;text-align:center}
-.mid-stat-label{font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px}
-.mid-stat-value{font-size:20px;font-weight:700;color:var(--gray-900);line-height:1.2}
-.mid-stat-sub{font-size:11px;color:var(--gray-500);margin-top:4px}
-.mid-stat-icon{font-size:24px;opacity:.2;margin-bottom:4px;display:block}
+.mid-stat-card{background:var(--white);border-radius:var(--radius-lg);padding:12px 20px;box-shadow:var(--shadow-sm);border-left:4px solid var(--green-light);flex:1;max-width:400px}
+.mid-stat-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.mid-stat-item{flex:1;display:flex;align-items:center;gap:8px}
+.mid-stat-label{font-size:12px;color:var(--gray-500);font-weight:600}
+.mid-stat-value{font-size:18px;font-weight:700;color:var(--gray-900);line-height:1.2}
+.mid-stat-divider{width:1px;height:30px;background:var(--gray-200)}
 
 /* SETTINGS PAGE */
 .settings-container{max-width:600px;margin:0 auto}
@@ -718,10 +719,11 @@ textarea.fc{resize:vertical;min-height:72px}
 
   /* ── Dashboard mid stats for mobile ── */
   .dash-mid-stats{flex-direction:column;gap:8px;margin-bottom:16px}
-  .mid-stat-card{max-width:100%;padding:12px 16px}
-  .mid-stat-value{font-size:18px}
+  .mid-stat-card{max-width:100%;padding:10px 16px}
+  .mid-stat-row{gap:12px}
+  .mid-stat-value{font-size:16px}
   .mid-stat-label{font-size:11px}
-  .mid-stat-icon{font-size:20px;margin-bottom:2px}
+  .mid-stat-divider{height:24px}
 
   /* ── Fix charts spilling off mobile screen width ── */
   #page-dashboard .chart-grid{overflow:hidden}

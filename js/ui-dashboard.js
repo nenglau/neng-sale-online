@@ -55,8 +55,19 @@ function renderDash(){
     <div class="stat-card purple"><span class="stat-icon">❌</span><div class="stat-label">order ຍົກເລີກ</div><div class="stat-value">${canceledOrders}</div><div class="stat-sub">ລາຍການ</div></div>
     <div class="stat-card red"><span class="stat-icon">💸</span><div class="stat-label">ລາຍຈ່າຍ</div><div class="stat-value">${fmt(exp)}</div><div class="stat-sub">₭</div></div>`;
   document.getElementById('dash-mid-stats').innerHTML=`
-    <div class="mid-stat-card"><span class="mid-stat-icon">📊</span><div class="mid-stat-label">ຈຳນວນຊິ້ນ (order ສຳເລັດ)</div><div class="mid-stat-value">${totalQty}</div><div class="mid-stat-sub">ຊິ້ນ</div></div>
-    <div class="mid-stat-card"><span class="mid-stat-icon">📈</span><div class="mid-stat-label">Margin</div><div class="mid-stat-value" style="color:var(--green)">${avgMargin}%</div><div class="mid-stat-sub">ກຳໄລ/ຍອດຂາຍ</div></div>`;
+    <div class="mid-stat-card">
+      <div class="mid-stat-row">
+        <div class="mid-stat-item">
+          <span class="mid-stat-value">${totalQty} ອັນ</span>
+          <span class="mid-stat-label">ສິນຄ້າ</span>
+        </div>
+        <div class="mid-stat-divider"></div>
+        <div class="mid-stat-item">
+          <span class="mid-stat-value" style="color:var(--green)">${avgMargin}%</span>
+          <span class="mid-stat-label">Margin</span>
+        </div>
+      </div>
+    </div>`;
   drawChannel(filteredSales,filteredFin);
 }
 function draw7Days(filteredSales){
