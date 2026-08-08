@@ -185,9 +185,16 @@
               <button class="btn btn-sm btn-danger" onclick="bulkDeletePending()"><i class="fa fa-trash"></i> ລົບ</button>
               <span id="pending-selected-count" style="font-size:12px;color:var(--gray-700);margin-left:auto"></span>
             </div>
-            <div class="panel-body" id="pending-orders-list" style="padding:12px 16px">
-              <div class="empty"><i class="fa fa-inbox"></i><p>ກຳລັງໂຫຼດ...</p></div>
-            </div>
+            <div class="table-wrap"><table class="order-table-modern"><thead><tr>
+              <th style="width:32px"><input type="checkbox" id="pending-chk-all" onchange="toggleSelectAllPending(this.checked)" style="cursor:pointer"></th>
+              <th>ລຳດັບ #</th>
+              <th>ຂໍ້ມູນລູກຄ້າ</th>
+              <th>ທີ່ຢູ່ຈັດສົ່ງ</th>
+              <th>ສິນຄ້າ</th>
+              <th>ຊ່ອງທາງ & ຂົນສົ່ງ</th>
+              <th>ການເງິນ</th>
+              <th>ຈັດການ</th>
+            </tr></thead><tbody id="pending-orders-list"></tbody></table></div>
             <div id="pending-cards" class="sales-cards"></div>
           </div>
         </div>
@@ -217,9 +224,15 @@
               <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="bulkDeleteSales()"><i class="fa fa-trash"></i> ລົບທີ່ເລືອກ</button>
               <button class="btn btn-outline btn-sm" onclick="clearSalesSelection()">ຍົກເລີກ</button>
             </div>
-            <div class="table-wrap"><table><thead><tr>
+            <div class="table-wrap"><table class="order-table-modern"><thead><tr>
               <th style="width:32px"><input type="checkbox" id="sales-chk-all" onchange="toggleSelectAllSales(this.checked)" style="cursor:pointer"></th>
-              <th>#</th><th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ຊ່ອງທາງ</th><th>ຂົນສົ່ງ</th><th>ລູກຄ້າ</th><th>ຈຳນວນ</th><th>ລາຄາ</th><th>ຫຼຸດ</th><th>ຍອດ</th><th>ກຳໄລ</th><th>ສະຖານະ</th><th>ຈັດການ</th>
+              <th>ລຳດັບ #</th>
+              <th>ຂໍ້ມູນລູກຄ້າ</th>
+              <th>ທີ່ຢູ່ຈັດສົ່ງ</th>
+              <th>ສິນຄ້າ</th>
+              <th>ຊ່ອງທາງ & ຂົນສົ່ງ</th>
+              <th>ການເງິນ</th>
+              <th>ຈັດການ</th>
             </tr></thead><tbody id="sales-tbody"></tbody></table></div>
             <div id="sales-cards" class="sales-cards"></div>
           </div>

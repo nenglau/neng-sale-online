@@ -31,40 +31,106 @@ function renderPendingOrders(){
   const cardsEl=document.getElementById('pending-cards');
   if(!container) return;
   if(!data.length){
-    container.innerHTML='<div class="empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p>ບໍ່ມີອໍເດີຕ້ອງສົ່ງ 🎉</p></div>';
+    container.innerHTML='<tr><td colspan="8"><div class="empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p>ບໍ່ມີອໍເດີຕ້ອງສົ່ງ 🎉</p></div></td></tr>';
     if(cardsEl) cardsEl.innerHTML='<div class="empty"><i class="fa fa-check-circle" style="color:var(--green)"></i><p>ບໍ່ມີອໍເດີຕ້ອງສົ່ງ 🎉</p></div>';
     return;
   }
-  container.className='panel-body'+(S.pendingEditMode?' edit-mode':'');
-  container.style.padding='12px 16px';
-  container.innerHTML=data.map(s=>{
-    const tot=s.qty*s.price-(s.discount||0);
+  
+  container.innerHTML=data.map((s,i)=>{
+    const tot=s.qty*s.price-(s.discount||0), pr=s.qty*(s.price-s.cost)-(s.discount||0);
+    const channelLower=(s.channel||'').toLowerCase();
+    let channelBadgeClass='channel-other';
+    if(channelLower.includes('whatsapp')) channelBadgeClass='channel-whatsapp';
+    else if(channelLower.includes('facebook')) channelBadgeClass='channel-facebook';
+    else if(channelLower.includes('tiktok')) channelBadgeClass='channel-tiktok';
+    else if(channelLower.includes('ຮ້ານ')||channelLower.includes('store')) channelBadgeClass='channel-store';
+    
     // Find shipping info from branches
     const sc=S.db.shipCos.find(x=>x.name===s.shipping_company);
     const br=sc?S.db.systemBranches.find(b=>b.shipping_company_id===sc.id&&b.name===s.branch):null;
-    const prov=br?br.province:(s.province||'');
-    const dist=br?br.district:(s.district||'');
-    const branchName=s.branch||'';
-    const shipLine=[prov,dist,branchName].filter(Boolean);
-    return `<div class="order-card" id="ocard-${s.id}">
-      <input type="checkbox" class="order-card-check" id="chk-${s.id}" onchange="updatePendingCount()">
-      <div class="order-card-row">
-        <div class="order-field"><i class="fa fa-calendar" style="color:var(--gray-500);font-size:12px"></i> ${fmtDate(s.date)}</div>
-        <div class="order-field"><strong style="font-size:14px"><i class="fa fa-user" style="font-size:12px;color:var(--gray-500);margin-right:4px"></i>${esc(s.customer_name||'—')}</strong></div>
-        <div class="order-field" style="font-weight:700;font-size:15px;color:var(--blue)">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px"></i> ${esc(s.customer_phone)}`:'—'}</div>
-        <div class="order-field">${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:''}</div>
-        <div class="order-field highlight"><i class="fa fa-box" style="font-size:12px"></i> ${esc(s.product_name||'-')} × ${s.qty}</div>
-        <div class="order-field"><strong style="color:var(--green-dark);font-size:15px">${fmt(tot)} ₭</strong></div>
-        <div class="order-card-actions">
-          <button class="btn-icon edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ"><i class="fa fa-pen"></i></button>
-          <button class="btn-icon del" onclick="delSale('${s.id}')" title="ລຶບ"><i class="fa fa-trash"></i></button>
+    const prov=stripLaoPrefix(br?br.province:(s.province||''),'ແຂວງ');
+    const dist=stripLaoPrefix(br?br.district:(s.district||''),'ເມືອງ');
+    const branch=stripLaoPrefix(s.branch,'ສາຂາ');
+    const mainAddressParts=[prov,dist].filter(Boolean);
+    
+    return `<tr><td><input type="checkbox" class="order-card-check" data-id="${s.id}" onchange="updatePendingCount()" style="cursor:pointer"></td>
+    <td>
+      <div class="order-id-cell">
+        <div class="order-id-number">#${i+1}</div>
+        <div class="order-id-date">${fmtDate(s.date)}</div>
+      </div>
+    </td>
+    <td>
+      <div class="order-customer-cell">
+        <div class="order-customer-name">
+          <i class="fa fa-user" style="font-size:11px;color:#64748B"></i>
+          ${esc(s.customer_name||'-')}
+          <span class="order-customer-badge">ລູກຄ້າ</span>
+        </div>
+        <div class="order-customer-phone">
+          <i class="fa fa-phone" style="font-size:11px"></i>
+          ${s.customer_phone?esc(s.customer_phone):'-'}
+          ${s.customer_phone?`<button class="quick-copy-btn" onclick="copyToClipboard('${esc(s.customer_phone)}')" title="ຄັດລອກ"><i class="fa fa-copy"></i></button>`:''}
         </div>
       </div>
-      ${shipLine.length?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        ${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)}"><i class="fa fa-truck"></i>${esc(s.shipping_company)}</span>`:''}
-        ${shipLine.length?`<span style="font-size:14px;color:var(--gray-700);font-weight:600"><i class="fa fa-map-marker-alt" style="color:var(--green);font-size:12px"></i> ${esc(shipLine.join(' › '))}</span>`:''}
-      </div>`:''}
-    </div>`;
+    </td>
+    <td>
+      <div class="order-address-cell">
+        <div class="order-address-main address-ellipsis" title="${mainAddressParts.join(' - ')}">
+          <i class="fa fa-map-marker-alt" style="color:#059669;font-size:12px"></i>
+          ${mainAddressParts.map(esc).join('<span class="address-separator">-</span>')}
+        </div>
+        ${branch?`<div class="order-address-branch">
+          <i class="fa fa-building" style="color:#059669;font-size:11px"></i>
+          ${esc(branch)}
+        </div>`:''}
+      </div>
+    </td>
+    <td>
+      <div class="order-products-cell">
+        <div class="order-product-name">${esc(s.product_name||'-')}</div>
+        <div class="order-product-qty">×${s.qty}</div>
+      </div>
+    </td>
+    <td>
+      <div class="order-channel-cell">
+        ${s.channel?`<span class="channel-badge ${channelBadgeClass}">${esc(s.channel)}</span>`:'-'}
+        ${s.shipping_company?`<span class="shipping-status-badge" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)}">
+          <i class="fa fa-truck" style="font-size:9px"></i> ${esc(s.shipping_company)}
+        </span>`:''}
+      </div>
+    </td>
+    <td>
+      <div class="order-financial-cell">
+        <div class="financial-row">
+          <span class="financial-label">ລາຄາ:</span>
+          <span class="financial-value">${fmt(s.price)} ₭</span>
+        </div>
+        ${s.discount?`<div class="financial-row">
+          <span class="financial-label">ຫຼຸດ:</span>
+          <span class="financial-value discount">-${fmt(s.discount)} ₭</span>
+        </div>`:''}
+        <div class="financial-row">
+          <span class="financial-label">ຍອດ:</span>
+          <span class="financial-value total">${fmt(tot)} ₭</span>
+        </div>
+        <div class="financial-row">
+          <span class="financial-label">ກຳໄລ:</span>
+          <span class="financial-value ${pr>=0?'profit':'profit-negative'}">${fmt(pr)} ₭</span>
+        </div>
+      </div>
+    </td>
+    <td>
+      <div class="order-actions-cell">
+        <button class="action-btn edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ">
+          <i class="fa fa-pen"></i>
+        </button>
+        <button class="action-btn delete" onclick="delSale('${s.id}')" title="ລຶບ">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+    </td>
+    </tr>`;
   }).join('');
 
   // ── Mobile card view (ອໍເດີຕ້ອງສົ່ງ): 3-row layout, same as ຈັດການຍອດ ──
@@ -76,7 +142,8 @@ function renderPendingOrders(){
       const prov=stripLaoPrefix(br?br.province:(s.province||''),'ແຂວງ');
       const dist=stripLaoPrefix(br?br.district:(s.district||''),'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
-      const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
+      const mainLoc=[prov,dist].filter(Boolean).join(' - ')||'-';
+      const loc=branch?`${mainLoc} | ${branch}`:mainLoc;
       const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
       const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
       const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
@@ -111,7 +178,7 @@ function togglePendingEditMode(){
   renderPendingOrders();
 }
 function visibleOrderChks(){
-  // Both the desktop pending list and mobile card view render .order-card-check
+  // Both the desktop pending table and mobile card view render .order-card-check
   // elements; only one set is visually shown at a time (CSS media query). Scope to
   // the visible set so bulk-select counts/ids never double up.
   return [...document.querySelectorAll('.order-card-check')].filter(c=>c.offsetParent!==null);
@@ -123,7 +190,14 @@ function updatePendingCount(){
   const checked=visibleOrderChks().filter(c=>c.checked).length;
   const el=document.getElementById('pending-selected-count');
   if(el) el.textContent=checked?`ເລືອກ ${checked} ລາຍການ`:'';
-  // highlight selected cards
+  // highlight selected rows in table
+  document.querySelectorAll('#pending-orders-list tr').forEach(row=>{
+    const chk=row.querySelector('.order-card-check');
+    if(chk){
+      row.classList.toggle('selected',chk.checked);
+    }
+  });
+  // highlight selected cards on mobile
   document.querySelectorAll('.order-card').forEach(card=>{
     const chk=card.querySelector('.order-card-check');
     card.classList.toggle('selected',chk&&chk.checked);
@@ -133,6 +207,11 @@ function selectAllPending(){
   const checks=visibleOrderChks();
   const allChecked=checks.every(c=>c.checked);
   checks.forEach(c=>c.checked=!allChecked);
+  updatePendingCount();
+}
+function toggleSelectAllPending(checked){
+  const checks=document.querySelectorAll('#pending-orders-list .order-card-check');
+  checks.forEach(c=>c.checked=checked);
   updatePendingCount();
 }
 async function markShippedAndPrint(){
@@ -299,30 +378,103 @@ function renderSalesTable(){
   const tb=document.getElementById('sales-tbody');
   const cardsEl=document.getElementById('sales-cards');
   if(!data.length){
-    tb.innerHTML='<tr><td colspan="13"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';
+    tb.innerHTML='<tr><td colspan="8"><div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div></td></tr>';
     if(cardsEl) cardsEl.innerHTML='<div class="empty"><i class="fa fa-inbox"></i><p>ຍັງບໍ່ມີຂໍ້ມູນ</p></div>';
     return;
   }
   tb.innerHTML=data.map((s,i)=>{
     const tot=s.qty*s.price-(s.discount||0), pr=s.qty*(s.price-s.cost)-(s.discount||0);
+    const channelLower=(s.channel||'').toLowerCase();
+    let channelBadgeClass='channel-other';
+    if(channelLower.includes('whatsapp')) channelBadgeClass='channel-whatsapp';
+    else if(channelLower.includes('facebook')) channelBadgeClass='channel-facebook';
+    else if(channelLower.includes('tiktok')) channelBadgeClass='channel-tiktok';
+    else if(channelLower.includes('ຮ້ານ')||channelLower.includes('store')) channelBadgeClass='channel-store';
+    
+    // Clean address text by removing Lao prefixes
+    const dist=stripLaoPrefix(s.district,'ເມືອງ');
+    const prov=stripLaoPrefix(s.province,'ແຂວງ');
+    const branch=stripLaoPrefix(s.branch,'ສາຂາ');
+    const mainAddressParts=[prov,dist].filter(Boolean);
+    
     return `<tr><td><input type="checkbox" class="sale-chk" data-id="${s.id}" onchange="updateSalesBulkBar()" style="cursor:pointer"></td>
-    <td style="color:var(--gray-500)">${i+1}</td><td>${fmtDate(s.date)}</td><td style="font-weight:700">${esc(s.product_name||'-')}</td>
-    <td>${s.channel?`<span class="order-channel-tag ${getChannelClass(s.channel)}">${esc(s.channel)}</span>`:'-'}</td>
-    <td>${s.shipping_company?`<span class="order-shipping-tag" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)};font-size:11px;padding:2px 8px">${esc(s.shipping_company)}</span>`:'-'}</td>
     <td>
-      <div style="font-weight:600;font-size:14px"><i class="fa fa-user" style="font-size:12px;color:var(--gray-500);margin-right:4px"></i>${esc(s.customer_name||'-')}</div>
-      <div style="font-weight:700;font-size:15px;color:var(--blue);margin-top:4px">${s.customer_phone?`<i class="fa fa-phone" style="font-size:13px;margin-right:4px"></i>${esc(s.customer_phone)}`:'-'}</div>
-      <div style="font-size:14px;color:var(--gray-700);margin-top:2px">
-        ${s.district?esc(s.district):''}${s.district && s.province?', ':''}${s.province?esc(s.province):''}
+      <div class="order-id-cell">
+        <div class="order-id-number">#${i+1}</div>
+        <div class="order-id-date">${fmtDate(s.date)}</div>
       </div>
-      <div style="font-size:14px;color:var(--gray-500)">${s.branch?esc(s.branch):''}</div>
     </td>
-    <td style="text-align:center">${s.qty}</td><td>${fmt(s.price)} ₭</td>
-    <td style="color:var(--orange)">${s.discount?fmt(s.discount)+' ₭':'-'}</td>
-    <td style="font-weight:700">${fmt(tot)} ₭</td>
-    <td style="font-weight:700;color:${pr>=0?'var(--green)':'var(--red)'}">${fmt(pr)} ₭</td>
-    <td>${badge(s.status)}</td>
-    <td><button class="btn-icon edit" onclick="editSale('${s.id}')"><i class="fa fa-pen"></i></button> <button class="btn-icon del" onclick="delSale('${s.id}')"><i class="fa fa-trash"></i></button></td></tr>`;
+    <td>
+      <div class="order-customer-cell">
+        <div class="order-customer-name">
+          <i class="fa fa-user" style="font-size:11px;color:#64748B"></i>
+          ${esc(s.customer_name||'-')}
+          <span class="order-customer-badge">ລູກຄ້າ</span>
+        </div>
+        <div class="order-customer-phone">
+          <i class="fa fa-phone" style="font-size:11px"></i>
+          ${s.customer_phone?esc(s.customer_phone):'-'}
+          ${s.customer_phone?`<button class="quick-copy-btn" onclick="copyToClipboard('${esc(s.customer_phone)}')" title="ຄັດລອກ"><i class="fa fa-copy"></i></button>`:''}
+        </div>
+      </div>
+    </td>
+    <td>
+      <div class="order-address-cell">
+        <div class="order-address-main address-ellipsis" title="${mainAddressParts.join(' - ')}">
+          <i class="fa fa-map-marker-alt" style="color:#059669;font-size:12px"></i>
+          ${mainAddressParts.map(esc).join('<span class="address-separator">-</span>')}
+        </div>
+        ${branch?`<div class="order-address-branch">
+          <i class="fa fa-building" style="color:#059669;font-size:11px"></i>
+          ${esc(branch)}
+        </div>`:''}
+      </div>
+    </td>
+    <td>
+      <div class="order-products-cell">
+        <div class="order-product-name">${esc(s.product_name||'-')}</div>
+        <div class="order-product-qty">×${s.qty}</div>
+      </div>
+    </td>
+    <td>
+      <div class="order-channel-cell">
+        ${s.channel?`<span class="channel-badge ${channelBadgeClass}">${esc(s.channel)}</span>`:'-'}
+        ${s.shipping_company?`<span class="shipping-status-badge" style="background:${getShippingCompanyColor(s.shipping_company)};color:${getShippingCompanyTextColor(s.shipping_company)}">
+          <i class="fa fa-truck" style="font-size:9px"></i> ${esc(s.shipping_company)}
+        </span>`:''}
+      </div>
+    </td>
+    <td>
+      <div class="order-financial-cell">
+        <div class="financial-row">
+          <span class="financial-label">ລາຄາ:</span>
+          <span class="financial-value">${fmt(s.price)} ₭</span>
+        </div>
+        ${s.discount?`<div class="financial-row">
+          <span class="financial-label">ຫຼຸດ:</span>
+          <span class="financial-value discount">-${fmt(s.discount)} ₭</span>
+        </div>`:''}
+        <div class="financial-row">
+          <span class="financial-label">ຍອດ:</span>
+          <span class="financial-value total">${fmt(tot)} ₭</span>
+        </div>
+        <div class="financial-row">
+          <span class="financial-label">ກຳໄລ:</span>
+          <span class="financial-value ${pr>=0?'profit':'profit-negative'}">${fmt(pr)} ₭</span>
+        </div>
+      </div>
+    </td>
+    <td>
+      <div class="order-actions-cell">
+        <button class="action-btn edit" onclick="editSale('${s.id}')" title="ແກ້ໄຂ">
+          <i class="fa fa-pen"></i>
+        </button>
+        <button class="action-btn delete" onclick="delSale('${s.id}')" title="ລຶບ">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+    </td>
+    </tr>`;
   }).join('');
 
   // ── Mobile card view (ຈັດການຍອດ): 3-row layout per card ──
@@ -332,7 +484,8 @@ function renderSalesTable(){
       const prov=stripLaoPrefix(s.province,'ແຂວງ');
       const dist=stripLaoPrefix(s.district,'ເມືອງ');
       const branch=stripLaoPrefix(s.branch,'ສາຂາ');
-      const loc=[prov,dist,branch].filter(Boolean).map(esc).join(' > ')||'-';
+      const mainLoc=[prov,dist].filter(Boolean).join(' - ')||'-';
+      const loc=branch?`${mainLoc} | ${branch}`:mainLoc;
       const phonePart=s.customer_phone?`<i class="fa fa-phone" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_phone)}`:'';
       const namePart=s.customer_name?`<i class="fa fa-user" style="font-size:11px;color:var(--gray-500);margin-right:2px"></i>${esc(s.customer_name)}`:'';
       const custBits=[phonePart,namePart].filter(Boolean).join(' / ')||'-';
@@ -661,6 +814,14 @@ function closeCombo(type){document.getElementById('combo-'+type).classList.remov
 function pickComboVal(fieldId,val){sv(fieldId,val);}
 function pickProd(name,price,cost){sv('s-prod',name);sv('s-price',price);sv('s-cost',cost);calcTotal();closeCombo('prod');}
 
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('ຄັດລອກແລ້ວ','success');
+  }).catch(err=>{
+    console.error('Failed to copy:',err);
+    toast('ບໍ່ສາມາດຄັດລອກ','error');
+  });
+}
 function getChannelClass(channel){
   if(!channel) return '';
   const lower=channel.toLowerCase();
