@@ -1,6 +1,105 @@
 // ══════════════════════════════════════
 //  COMPANY SETTINGS
 // ══════════════════════════════════════
+function renderSettingsPage(){
+  const sl=getSellerInfo();
+  document.getElementById('settings-logo-display').textContent=S.company.logo?S.company.logo:'-';
+  document.getElementById('settings-name-display').textContent=S.company.name||'-';
+  document.getElementById('settings-url-display').textContent=S.company.gas_url?'****':'-';
+  document.getElementById('settings-shopname-display').textContent=sl.shop||'-';
+  document.getElementById('settings-sellername-display').textContent=sl.name||'-';
+  document.getElementById('settings-sellerphone-display').textContent=sl.phone||'-';
+  document.getElementById('settings-adminname-display').textContent=S.profiles?.name||'-';
+  document.getElementById('settings-adminemail-display').textContent=S.profiles?.email||'-';
+}
+function toggleSettingsSection(section){
+  const content=document.getElementById(section+'-content');
+  const arrow=document.getElementById(section+'-arrow');
+  if(content.style.display==='none'){
+    content.style.display='block';
+    arrow.classList.add('open');
+  }else{
+    content.style.display='none';
+    arrow.classList.remove('open');
+  }
+}
+function openSettingsEdit(field){
+  const fieldMap={
+    'logo':'Logo',
+    'name':'Name',
+    'url':'Google app script Url',
+    'shopname':'ຊື່ຮ້ານ',
+    'sellername':'ຊື່ຜູ້ຂາຍ',
+    'sellerphone':'ເບີໂທ ຜູ້ຂາຍ',
+    'adminname':'Admin Name',
+    'adminemail':'Admin Email'
+  };
+  const currentMap={
+    'logo':S.company.logo||'',
+    'name':S.company.name||'',
+    'url':S.company.gas_url||'',
+    'shopname':getSellerInfo().shop||'',
+    'sellername':getSellerInfo().name||'',
+    'sellerphone':getSellerInfo().phone||'',
+    'adminname':S.profiles?.name||'',
+    'adminemail':S.profiles?.email||''
+  };
+  document.getElementById('settings-edit-title').textContent='ແກ້ໄຂ '+fieldMap[field];
+  document.getElementById('settings-edit-label').textContent=fieldMap[field];
+  document.getElementById('settings-edit-value').value=currentMap[field];
+  document.getElementById('settings-edit-field').value=field;
+  openModal('modal-settings-edit');
+}
+async function saveSettingsEdit(){
+  const field=v('settings-edit-field');
+  const value=v('settings-edit-value').trim();
+  if(!value){toast('ກະລຸນາໃສ່ຄ່າ','error');return;}
+  
+  try{
+    if(field==='logo'){
+      const{error}=await sb.from('companies').update({logo:value}).eq('id',S.company.id);
+      if(error) throw error;
+      S.company.logo=value;
+      document.getElementById('settings-logo-display').textContent=value;
+    }else if(field==='name'){
+      const{error}=await sb.from('companies').update({name:value}).eq('id',S.company.id);
+      if(error) throw error;
+      S.company.name=value;
+      document.getElementById('settings-name-display').textContent=value;
+      document.getElementById('sb-company-name').textContent=value;
+    }else if(field==='url'){
+      const{error}=await sb.from('companies').update({gas_url:value}).eq('id',S.company.id);
+      if(error) throw error;
+      S.company.gas_url=value;
+      document.getElementById('settings-url-display').textContent='****';
+    }else if(field==='shopname'||field==='sellername'||field==='sellerphone'){
+      const sl=getSellerInfo();
+      if(field==='shopname') sl.shop=value;
+      if(field==='sellername') sl.name=value;
+      if(field==='sellerphone') sl.phone=value;
+      localStorage.setItem('sellerInfo',JSON.stringify(sl));
+      if(field==='shopname') document.getElementById('settings-shopname-display').textContent=value;
+      if(field==='sellername') document.getElementById('settings-sellername-display').textContent=value;
+      if(field==='sellerphone') document.getElementById('settings-sellerphone-display').textContent=value;
+    }else if(field==='adminname'||field==='adminemail'){
+      const{error}=await sb.from('profiles').update({[field==='adminname'?'name':'email']:value}).eq('id',S.user.id);
+      if(error) throw error;
+      if(field==='adminname'){
+        S.profiles.name=value;
+        document.getElementById('settings-adminname-display').textContent=value;
+        document.getElementById('sb-user-name').textContent=value;
+      }else{
+        S.profiles.email=value;
+        document.getElementById('settings-adminemail-display').textContent=value;
+        document.getElementById('sb-user-email').textContent=value;
+      }
+    }
+    closeModal('modal-settings-edit');
+    toast('ບັນທຶກສຳເລັດ','success');
+  }catch(err){
+    toast(err.message,'error');
+  }
+}
 function renderCoInfo(){
   const el=document.getElementById('co-info-content')||document.getElementById('co-settings');
   const sl=getSellerInfo();

@@ -112,6 +112,30 @@ datalist option{font-family:'Noto Sans Lao',sans-serif}
 .stat-sub{font-size:12px;color:var(--gray-500);margin-top:4px}
 .stat-icon{font-size:26px;float:right;opacity:.2;margin-top:-2px}
 
+/* DASHBOARD MID STATS */
+.dash-mid-stats{display:flex;gap:16px;margin-bottom:24px;justify-content:center}
+.mid-stat-card{background:var(--white);border-radius:var(--radius-lg);padding:16px 24px;box-shadow:var(--shadow-sm);border-left:4px solid var(--green-light);flex:1;max-width:300px;text-align:center}
+.mid-stat-label{font-size:12px;color:var(--gray-500);font-weight:600;margin-bottom:6px}
+.mid-stat-value{font-size:20px;font-weight:700;color:var(--gray-900);line-height:1.2}
+.mid-stat-sub{font-size:11px;color:var(--gray-500);margin-top:4px}
+.mid-stat-icon{font-size:24px;opacity:.2;margin-bottom:4px;display:block}
+
+/* SETTINGS PAGE */
+.settings-container{max-width:600px;margin:0 auto}
+.settings-section{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:16px;overflow:hidden}
+.settings-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .2s}
+.settings-header:hover{background:var(--gray-50)}
+.settings-title{font-size:15px;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:10px}
+.settings-title i{color:var(--green);font-size:16px}
+.settings-arrow{transition:transform .3s;color:var(--gray-500)}
+.settings-arrow.open{transform:rotate(180deg)}
+.settings-content{padding:0 20px 20px;border-top:1px solid var(--gray-200)}
+.settings-item{padding:16px 0;border-bottom:1px solid var(--gray-100)}
+.settings-item:last-child{border-bottom:none}
+.settings-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.settings-item-label{font-size:13px;font-weight:600;color:var(--gray-700)}
+.settings-item-value{font-size:14px;color:var(--gray-900);padding:8px 12px;background:var(--gray-50);border-radius:6px}
+
 /* PANELS */
 .panel{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px}
 .panel-header{padding:14px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -692,6 +716,13 @@ textarea.fc{resize:vertical;min-height:72px}
   #page-dashboard .stat-grid .stat-card:not(:nth-child(1)) .stat-value{font-size:15px}
   #page-dashboard .stat-grid .stat-card:not(:nth-child(1)) .stat-label{font-size:10px;margin-bottom:2px}
 
+  /* ── Dashboard mid stats for mobile ── */
+  .dash-mid-stats{flex-direction:column;gap:8px;margin-bottom:16px}
+  .mid-stat-card{max-width:100%;padding:12px 16px}
+  .mid-stat-value{font-size:18px}
+  .mid-stat-label{font-size:11px}
+  .mid-stat-icon{font-size:20px;margin-bottom:2px}
+
   /* ── Fix charts spilling off mobile screen width ── */
   #page-dashboard .chart-grid{overflow:hidden}
   #page-dashboard .chart-panel{overflow:hidden;width:100%;padding:16px}
@@ -701,9 +732,20 @@ textarea.fc{resize:vertical;min-height:72px}
   /* ── Finance/overview donut panel: full-width, bigger, centered, own "ພາບລວມ" title ── */
   .title-mobile{display:inline}
   .title-desktop{display:none}
-  .chart-panel-finance{border-radius:16px}
+  .chart-panel-finance{border-radius:16px;margin-top:0}
   .chart-panel-finance .chart-title{text-align:center;font-size:16px;margin-bottom:10px}
   .chart-panel-finance .chart-wrap{height:300px}
+  #page-dashboard .chart-grid{margin-top:-12px}
+
+  /* ── Settings page mobile responsive ── */
+  .settings-container{padding:0 12px}
+  .settings-section{margin-bottom:12px}
+  .settings-header{padding:12px 16px}
+  .settings-title{font-size:14px}
+  .settings-content{padding:0 16px 16px}
+  .settings-item{padding:12px 0}
+  .settings-item-label{font-size:12px}
+  .settings-item-value{font-size:13px;padding:6px 10px}
 
   /* ── Sales page (ຈັດການຍອດ): compact header, single-row filters, card view ── */
   #page-sales .topbar{padding:0 12px 0 8px;height:auto;min-height:44px}

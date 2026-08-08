@@ -102,24 +102,17 @@
       <div class="nav-section">ຫຼັກ</div>
       <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><i class="fa fa-chart-pie"></i> Dashboard</div>
       <div class="nav-item" data-page="sales" onclick="navigate('sales')"><i class="fa fa-shopping-cart"></i> ຈັດການຍອດຂາຍ</div>
-      <div class="nav-item" data-page="ads" onclick="navigate('ads')"><i class="fa fa-bullhorn"></i> ໂຄສະນາ</div>
-      <div class="nav-item" data-page="finance" onclick="navigate('finance')"><i class="fa fa-wallet"></i> ການເງິນ</div>
+      <div class="nav-item" data-page="reports" onclick="navigate('reports')"><i class="fa fa-chart-bar"></i> ລາຍງານ</div>
       <div class="nav-section">ຂໍ້ມູນ</div>
       <div class="nav-item" data-page="products" onclick="navigate('products')"><i class="fa fa-box"></i> ສິນຄ້າ</div>
-      <div class="nav-item" data-page="reports" onclick="navigate('reports')"><i class="fa fa-chart-bar"></i> ລາຍງານ</div>
-      <div class="nav-item" id="nav-settings-toggle" onclick="toggleSettings()"><i class="fa fa-cog"></i> ການຕັ້ງຄ່າ<i class="fa fa-chevron-right nav-arrow" id="settings-arrow"></i></div>
-      <div class="nav-submenu" id="settings-submenu" style="display:none">
-        <div class="nav-subitem" data-page="co-info" onclick="navigate('co-info')"><i class="fa fa-building"></i> ຂໍ້ມູນບໍລິສັດ</div>
-      </div>
+      <div class="nav-item" data-page="ads" onclick="navigate('ads')"><i class="fa fa-bullhorn"></i> ໂຄສະນາ</div>
+      <div class="nav-item" data-page="finance" onclick="navigate('finance')"><i class="fa fa-wallet"></i> ການເງິນ</div>
+      <div class="nav-item" data-page="settings" onclick="navigate('settings')"><i class="fa fa-cog"></i> ການຕັ້ງຄ່າ</div>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user">
         <div class="user-avatar" id="sb-avatar">U</div>
         <div><div class="user-name" id="sb-user-name"></div><div class="user-email" id="sb-user-email"></div></div>
-      </div>
-      <div class="sidebar-actions">
-        <button class="btn-sidebar-action btn-switch" onclick="goCompanySelect()">ປ່ຽນ</button>
-        <button class="btn-sidebar-action btn-logout" onclick="doLogout()">ອອກ</button>
       </div>
       <button id="btn-pwa-install" onclick="installPWA()" style="display:none;margin-top:8px;width:100%;padding:8px;background:var(--green);color:white;border-radius:var(--radius);font-size:13px;font-weight:600;gap:6px" class="btn-sidebar-action">
         ⬇ ຕິດຕັ້ງເປັນ App
@@ -155,6 +148,7 @@
           </select>
         </div>
         <div class="stat-grid" id="dash-stats"></div>
+        <div class="dash-mid-stats" id="dash-mid-stats"></div>
         <div class="chart-grid">
           <div class="chart-panel chart-panel-finance"><div class="chart-title"><span class="title-desktop">ການເງິນ</span><span class="title-mobile">ພາບລວມ</span></div><div class="chart-wrap"><canvas id="chart-channel"></canvas></div></div>
         </div>
@@ -353,6 +347,115 @@
       <div id="page-co-info" class="page">
         <div id="co-info-content"></div>
       </div>
+
+      <!-- SETTINGS PAGE -->
+      <div id="page-settings" class="page">
+        <div class="settings-container">
+          <div class="settings-section" onclick="toggleSettingsSection('company')">
+            <div class="settings-header">
+              <span class="settings-title"><i class="fa fa-building"></i> Company (ຂໍ້ມູນບໍລິສັດ)</span>
+              <i class="fa fa-chevron-down settings-arrow" id="company-arrow"></i>
+            </div>
+            <div class="settings-content" id="company-content" style="display:none">
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">Logo</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('logo')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-logo-display">-</div>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">Name</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('name')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-name-display">-</div>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">Google app script Url</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('url')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-url-display">****</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" onclick="toggleSettingsSection('shipping')">
+            <div class="settings-header">
+              <span class="settings-title"><i class="fa fa-truck"></i> ຂໍ້ມູນສຳລັບບິນຈັດສົ່ງ</span>
+              <i class="fa fa-chevron-down settings-arrow" id="shipping-arrow"></i>
+            </div>
+            <div class="settings-content" id="shipping-content" style="display:none">
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">ຊື່ຮ້ານ</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('shopname')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-shopname-display">-</div>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">ຊື່ຜູ້ຂາຍ</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('sellername')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-sellername-display">-</div>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">ເບີໂທ ຜູ້ຂາຍ</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('sellerphone')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-sellerphone-display">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" onclick="toggleSettingsSection('admin')">
+            <div class="settings-header">
+              <span class="settings-title"><i class="fa fa-user-shield"></i> Author Admin</span>
+              <i class="fa fa-chevron-down settings-arrow" id="admin-arrow"></i>
+            </div>
+            <div class="settings-content" id="admin-content" style="display:none">
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">Admin Name</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('adminname')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-adminname-display">-</div>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">Admin Email</span>
+                  <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openSettingsEdit('adminemail')">Edit</button>
+                </div>
+                <div class="settings-item-value" id="settings-adminemail-display">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" onclick="toggleSettingsSection('account')">
+            <div class="settings-header">
+              <span class="settings-title"><i class="fa fa-user-cog"></i> Account settings</span>
+              <i class="fa fa-chevron-down settings-arrow" id="account-arrow"></i>
+            </div>
+            <div class="settings-content" id="account-content" style="display:none">
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">ປ່ຽນບໍລິສັດ</span>
+                </div>
+                <button class="btn btn-green btn-sm" onclick="event.stopPropagation(); goCompanySelect()">ປ່ຽນ</button>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-header">
+                  <span class="settings-item-label">ອອກຈາກລະບົບ</span>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); doLogout()">ອອກ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -499,6 +602,17 @@
   </div>
 </div>
 
+<!-- Product Category Modal -->
+<div class="modal-overlay" id="modal-product-cat">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">จัดการหมวดหมู่สินค้า</span><button class="modal-close" onclick="closeModal('modal-product-cat')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><div><label>เพิ่มหมวดหมู่ใหม่</label><div style="display:flex;gap:8px"><input class="fc" type="text" id="prod-cat-new" placeholder="ชื่อหมวดหมู่"><button class="btn btn-green" onclick="addProductCategory()">เพิ่ม</button></div></div></div>
+      <div style="margin-top:16px"><label>หมวดหมู่ทั้งหมด</label><div id="prod-cat-list" style="margin-top:8px;max-height:200px;overflow-y:auto"></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- Product Modal -->
 <div class="modal-overlay" id="modal-product">
   <div class="modal" style="max-width:500px">
@@ -510,7 +624,7 @@
         <div><label>SKU</label><input class="fc" type="text" id="p-sku" placeholder="HG-001"></div>
       </div>
       <div class="form-row cols-2">
-        <div><label>ໝວດ</label><select class="fc" id="p-cat"><option>ສະໝຸນໄພ</option><option>ສ້ຽວ/ອຸປະກອນ</option><option>ຊຸດ</option><option>ອື່ນໆ</option></select></div>
+        <div><label>ໝວດ</label><div style="display:flex;gap:8px"><select class="fc" id="p-cat"><option>ສະໝຸນໄພ</option><option>ສ້ຽວ/ອຸປະກອນ</option><option>ຊຸດ</option><option>ອື່ນໆ</option></select><button class="btn btn-outline btn-sm" onclick="openProductCatModal()" title="จัดการหมวดหมู่"><i class="fa fa-cog"></i></button></div></div>
         <div><label>ສະຖານະ</label><select class="fc" id="p-status"><option>ວາງຂາຍ</option><option>ໝົດ</option><option>ຢຸດຂາຍ</option></select></div>
       </div>
       <div class="form-row cols-3">
@@ -656,6 +770,24 @@
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-seller')">ຍົກເລີກ</button>
       <button class="btn btn-green" onclick="saveSellerInfo()">💾 ບັນທຶກ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Edit Modal -->
+<div class="modal-overlay" id="modal-settings-edit">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title" id="settings-edit-title">ແກ້ໄຂ</span>
+      <button class="modal-close" onclick="closeModal('modal-settings-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="settings-edit-field">
+      <div class="form-row"><div><label id="settings-edit-label">ຄ່າ</label><input class="fc" type="text" id="settings-edit-value" placeholder="ຄ່າໃໝ່"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-settings-edit')">ຍົກເລີກ</button>
+      <button class="btn btn-green" onclick="saveSettingsEdit()">ບັນທຶກ</button>
     </div>
   </div>
 </div>

@@ -322,25 +322,14 @@ function setupRealtime(){
 // ══════════════════════════════════════
 //  NAVIGATE
 // ══════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',sales:'ຈັດການຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ'};
-function toggleSettings(){
-  const sub=document.getElementById('settings-submenu');
-  const arr=document.getElementById('settings-arrow');
-  const open=sub.style.display==='block';
-  sub.style.display=open?'none':'block';
-  arr.style.transform=open?'':'rotate(90deg)';
-}
+const PAGE_TITLES={dashboard:'Dashboard',sales:'ຈັດການຍອດຂາຍ',finance:'ການເງິນ',products:'ສິນຄ້າ',ads:'ໂຄສະນາ',reports:'ລາຍງານ',company:'ຂໍ້ມູນບໍລິສັດ','co-info':'ຂໍ້ມູນບໍລິສັດ',settings:'ການຕັ້ງຄ່າ'};
 function navigate(page, pushHistory=true){
   if(page==='company') page='co-info';
+  if(page==='co-info') page='settings';
   // push current page to history before switching (only if different)
   if(pushHistory && S.page && S.page!==page){
     S.navHistory.push(S.page);
     if(S.navHistory.length>20) S.navHistory.shift();
-  }
-  // auto-open settings submenu for settings pages
-  if(page==='co-info'){
-    document.getElementById('settings-submenu').style.display='block';
-    document.getElementById('settings-arrow').style.transform='rotate(90deg)';
   }
   S.page=page;
   // Save current page so refresh restores it
@@ -405,6 +394,7 @@ function renderPage(p){
   else if(p==='ads') renderAds();
   else if(p==='reports') renderReports();
   else if(p==='company'||p==='co-info') renderCoInfo();
+  else if(p==='settings') renderSettingsPage();
 }
 
 // ══════════════════════════════════════

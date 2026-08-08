@@ -1,6 +1,8 @@
 // ══════════════════════════════════════
 //  PRODUCTS
 // ══════════════════════════════════════
+let productCategories=['ສະໝຸນໄພ','ສ້ຽວ/ອຸປະກອນ','ຊຸດ','ອື່ນໆ'];
+
 function renderProductsTable(){
   const q=v('prod-search').toLowerCase();
   const data=S.db.products.filter(p=>!q||(p.name||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q));
@@ -18,13 +20,56 @@ function renderProductsTable(){
 function openProductModal(){
   sv('prod-id','');document.getElementById('prod-title').textContent='ເພີ່ມສິນຄ້າ';
   sv('p-name','');sv('p-sku','');sv('p-cat','ສະໝຸນໄພ');sv('p-price','');sv('p-cost','');sv('p-stock',0);sv('p-status','ວາງຂາຍ');
+  updateProductCategoryOptions();
   openModal('modal-product');
 }
 function editProduct(id){
   const p=S.db.products.find(x=>x.id===id); if(!p) return;
   document.getElementById('prod-title').textContent='ແກ້ໄຂສິນຄ້າ';
   sv('prod-id',id);sv('p-name',p.name);sv('p-sku',p.sku||'');sv('p-cat',p.category||'');sv('p-price',p.price);sv('p-cost',p.cost);sv('p-stock',p.stock||0);sv('p-status',p.status);
+  updateProductCategoryOptions();
   openModal('modal-product');
+}
+function updateProductCategoryOptions(){
+  const sel=document.getElementById('p-cat');
+  if(!sel) return;
+  sel.innerHTML='';
+  productCategories.forEach(c=>{
+    const opt=document.createElement('option');
+    opt.value=c;
+    opt.textContent=c;
+    sel.appendChild(opt);
+  });
+}
+function openProductCatModal(){
+  renderProductCategories();
+  openModal('modal-product-cat');
+}
+function renderProductCategories(){
+  const list=document.getElementById('prod-cat-list');
+  if(!list) return;
+  list.innerHTML=productCategories.map((c,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--gray-50);border-radius:6px;margin-bottom:6px">
+    <span style="flex:1;font-size:13px">${esc(c)}</span>
+    <button class="btn-icon del" onclick="deleteProductCategory(${i})" style="color:var(--red)"><i class="fa fa-trash"></i></button>
+  </div>`).join('');
+}
+function addProductCategory(){
+  const name=v('prod-cat-new').trim();
+  if(!name){toast('ກະລຸນາໃສ່ຊື່ຫມວດ','error');return;}
+  if(productCategories.includes(name)){toast('ຫມວດນີ້ມີແລ້ວ','error');return;}
+  productCategories.push(name);
+  sv('prod-cat-new','');
+  renderProductCategories();
+  updateProductCategoryOptions();
+  toast('ເພີ່ມຫມວດສຳເລັດ','success');
+}
+function deleteProductCategory(index){
+  const confirmed=confirm('ຕ້ອງການລົບຫມວດນີ້ບໍ?');
+  if(!confirmed) return;
+  productCategories.splice(index,1);
+  renderProductCategories();
+  updateProductCategoryOptions();
+  toast('ລົບຫມວດສຳເລັດ','success');
 }
 async function saveProduct(){
   const name=v('p-name'); if(!name){toast('ກະລຸນາໃສ່ຊື່','error');return;}
